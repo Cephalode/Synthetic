@@ -3,6 +3,7 @@ import './App.css';
 import useSynthEngine from './useSynthEngine';
 import LayerCard from './LayerCard';
 import PianoKeyboard from './PianoKeyboard';
+import AiChat from './AiChat';
 
 const DEFAULT_LAYER = {
   waveShape: 'sine',
@@ -11,7 +12,8 @@ const DEFAULT_LAYER = {
   sustain: 0.7,
   release: 0.3,
   octave: 4,
-  instrumentProfile: null,
+  harmonic: 1,
+  gain: 1,
 };
 
 let nextId = 2;
@@ -35,6 +37,15 @@ export default function App() {
     );
   }, []);
 
+  const handleAiGenerate = useCallback((aiLayers) => {
+    const newLayers = aiLayers.map((l) => ({ id: nextId++, ...l }));
+    setLayers(newLayers);
+  }, []);
+
+  const handleClearLayers = useCallback(() => {
+    setLayers([{ id: nextId++, ...DEFAULT_LAYER }]);
+  }, []);
+
   return (
     <div className="app">
       <header className="app-header">
@@ -56,24 +67,30 @@ export default function App() {
         </div>
       </header>
 
-      <section className="layers">
-        {layers.map((layer, index) => (
-          <LayerCard
-            key={layer.id}
-            layer={layer}
-            index={index}
-            onUpdate={(updated) => updateLayer(layer.id, updated)}
-            onDelete={() => removeLayer(layer.id)}
-          />
-        ))}
-      </section>
+      <div className="app-content">
+        <AiChat onGenerateLayers={handleAiGenerate} onClearLayers={handleClearLayers} />
 
-      <PianoKeyboard
-        baseOctave={baseOctave}
-        layers={layers}
-        noteOn={noteOn}
-        noteOff={noteOff}
-      />
+        <div className="synth-panel">
+          <section className="layers">
+            {layers.map((layer, index) => (
+              <LayerCard
+                key={layer.id}
+                layer={layer}
+                index={index}
+                onUpdate={(updated) => updateLayer(layer.id, updated)}
+                onDelete={() => removeLayer(layer.id)}
+              />
+            ))}
+          </section>
+
+          <PianoKeyboard
+            baseOctave={baseOctave}
+            layers={layers}
+            noteOn={noteOn}
+            noteOff={noteOff}
+          />
+        </div>
+      </div>
     </div>
   );
 }

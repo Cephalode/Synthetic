@@ -40,7 +40,7 @@ body {
 
 /* ── Layout ── */
 .app {
-  max-width: 960px;
+  max-width: 1280px;
   margin: 0 auto;
   padding: 24px 20px 40px;
 }
@@ -526,8 +526,226 @@ input[type="range"]::-moz-range-thumb {
   font-weight: 600;
 }
 
+/* ── Two-column Layout ── */
+.app-content {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.chat-panel {
+  width: 320px;
+  min-width: 280px;
+  background: #0d1117;
+  border: 1px solid #2a3040;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  height: 600px;
+  flex-shrink: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #1c2333;
+  border-radius: 12px 12px 0 0;
+  border-bottom: 1px solid #2a3040;
+}
+
+.chat-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #00d4aa;
+}
+
+.chat-clear-btn {
+  background: transparent;
+  border: 1px solid #2a3040;
+  color: #8b949e;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chat-clear-btn:hover {
+  border-color: #f85149;
+  color: #f85149;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-message {
+  max-width: 90%;
+}
+
+.chat-message.user {
+  align-self: flex-end;
+}
+
+.chat-message.ai {
+  align-self: flex-start;
+}
+
+.chat-message-content {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.chat-message.user .chat-message-content {
+  background: #1c3a5e;
+  color: #c9d1d9;
+  border-bottom-right-radius: 3px;
+}
+
+.chat-message.ai .chat-message-content {
+  background: #1c2333;
+  color: #c9d1d9;
+  border-bottom-left-radius: 3px;
+  border: 1px solid #2a3040;
+}
+
+.chat-message-content p {
+  margin: 0 0 4px 0;
+}
+
+.chat-message-content p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-message-content strong {
+  color: #00d4aa;
+  font-weight: 600;
+}
+
+.chat-message-content code {
+  background: rgba(0, 212, 170, 0.15);
+  color: #00d4aa;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.chat-input-area {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid #2a3040;
+  background: #0d1117;
+  border-radius: 0 0 12px 12px;
+}
+
+.chat-input {
+  flex: 1;
+  background: #161b22;
+  border: 1px solid #2a3040;
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: #c9d1d9;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.chat-input:focus {
+  border-color: #00d4aa;
+}
+
+.chat-input::placeholder {
+  color: #484f58;
+}
+
+.chat-send-btn {
+  background: #00d4aa;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  color: #0d1117;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.chat-send-btn:hover:not(:disabled) {
+  background: #00eabb;
+}
+
+.chat-send-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.synth-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Role Badge ── */
+.role-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(192, 132, 252, 0.2);
+  color: #c084fc;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Harmonic Badge ── */
+.harmonic-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: rgba(255, 166, 77, 0.2);
+  color: #ffa64d;
+  border-radius: 4px;
+  font-weight: 600;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.harmonic-badge.noise-badge {
+  background: rgba(255, 85, 85, 0.2);
+  color: #ff5555;
+}
+
+/* ── Layer Name (replaces "Layer N" when role exists) ── */
+.layer-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* ── Gain slider ── */
+.gain-slider {
+  /* inherits from slider-control */
+}
+
 /* ── Responsive ── */
 @media (max-width: 700px) {
+  .app-content {
+    flex-direction: column;
+  }
+
+  .chat-panel {
+    width: 100%;
+    min-width: unset;
+    height: 400px;
+  }
+
   .layer-body {
     grid-template-columns: 1fr;
   }

@@ -272,14 +272,31 @@ function findInstrument(query) {
 
 // ─── Modifier Detection ──────────────────────────────────────────────────────
 
+const MODIFIER_WORDS = [
+  'bright', 'warm', 'dark', 'soft', 'gentle', 'mellow',
+  'harsh', 'sharp', 'hard', 'deep', 'rich', 'thin',
+  'brighter', 'warmer', 'softer', 'harsher',
+]
+
 function detectModifiers(query) {
   const q = query.toLowerCase()
   const mods = {}
-  if (/\bbright\b/.test(q)) mods.bright = true
-  if (/\bwarm\b/.test(q) || /\bdark\b/.test(q)) mods.warm = true
-  if (/\bsoft\b/.test(q) || /\bgentle\b/.test(q) || /\bmellow\b/.test(q)) mods.soft = true
-  if (/\bharsh\b/.test(q) || /\bsharp\b/.test(q) || /\bhard\b/.test(q)) mods.harsh = true
+  if (/\bbright\b/.test(q) || /\bbrighter\b/.test(q)) mods.bright = true
+  if (/\bwarm\b/.test(q) || /\bdark\b/.test(q) || /\bwarmer\b/.test(q)) mods.warm = true
+  if (/\bsoft\b/.test(q) || /\bgentle\b/.test(q) || /\bmellow\b/.test(q) || /\bsofter\b/.test(q)) mods.soft = true
+  if (/\bharsh\b/.test(q) || /\bsharp\b/.test(q) || /\bhard\b/.test(q) || /\bharsher\b/.test(q)) mods.harsh = true
+  if (/\bdeep\b/.test(q)) mods.warm = true
+  if (/\brich\b/.test(q)) mods.bright = true
+  if (/\bthin\b/.test(q)) mods.soft = true
   return mods
+}
+
+function stripModifiers(query) {
+  let q = query.toLowerCase().trim()
+  for (const word of MODIFIER_WORDS) {
+    q = q.replace(new RegExp('\\b' + word + '\\b', 'g'), '')
+  }
+  return q.replace(/\s+/g, ' ').trim()
 }
 
 // ─── Build Layers ────────────────────────────────────────────────────────────
@@ -288,18 +305,44 @@ function buildLayers(instrument, modifiers) {
   const layers = []
   const env = { ...instrument.envelope }
 
-  if (modifiers.soft) env.attack = Math.min(env.attack * 3, 0.5)
-  if (modifiers.harsh) env.attack = Math.max(env.attack * 0.5, 0.001)
+  if (modifiers.soft) {
+    env.attack = Math.min(env.attack * 3, 0.5)
+    env.release = Math.min(env.release * 1.5, 1.0)
+  }
+  if (modifiers.harsh) {
+    env.attack = Math.max(env.attack * 0.5, 0.001)
+  }
+
+  // Compute modifier-adjusted filter (bright/warm shift the cutoff frequency)
+  let adjustedFilter = instrument.filter ? { ...instrument.filter } : null
+  let adjustedFilterEnv = instrument.filterEnvelope ? { ...instrument.filterEnvelope } : null
+  if (adjustedFilter && modifiers.bright) {
+    adjustedFilter.frequency = Math.min(adjustedFilter.frequency * 2, 20000)
+    if (adjustedFilterEnv) adjustedFilterEnv.amount = Math.min(adjustedFilterEnv.amount * 1.5, 10000)
+  }
+  if (adjustedFilter && modifiers.warm) {
+    adjustedFilter.frequency = Math.max(adjustedFilter.frequency * 0.6, 300)
+    if (adjustedFilterEnv) adjustedFilterEnv.amount = Math.max(adjustedFilterEnv.amount * 0.6, 50)
+  }
+  if (adjustedFilter && modifiers.harsh) {
+    adjustedFilter.Q = Math.min(adjustedFilter.Q * 1.5, 20)
+    if (adjustedFilterEnv) adjustedFilterEnv.amount = Math.min(adjustedFilterEnv.amount * 1.8, 10000)
+  }
+  if (adjustedFilter && modifiers.soft) {
+    adjustedFilter.Q = Math.max(adjustedFilter.Q * 0.5, 0.1)
+  }
 
   // Harmonic layers — copy DSP features from instrument to each layer
   for (const h of instrument.harmonics) {
     let gain = h.gain
     const hn = h.harmonic
 
-    if (modifiers.bright && hn > 1) gain = Math.min(gain * 1.5, 1.0)
-    if (modifiers.warm && hn > 2) gain *= 0.5
-    if (modifiers.soft && hn > 3) gain *= 0.3
-    if (modifiers.harsh && hn > 1) gain = Math.min(gain * 1.3, 1.0)
+    if (modifiers.bright && hn > 1) gain = Math.min(gain * 2.0, 1.0)
+    if (modifiers.warm && hn > 2) gain *= 0.4
+    if (modifiers.warm && hn > 4) gain *= 0.3
+    if (modifiers.soft && hn > 2) gain *= 0.5
+    if (modifiers.soft && hn > 4) gain *= 0.3
+    if (modifiers.harsh && hn > 1) gain = Math.min(gain * 1.5, 1.0)
 
     layers.push({
       waveShape: h.waveShape || instrument.waveShape,
@@ -311,8 +354,8 @@ function buildLayers(instrument, modifiers) {
       gain: Math.round(gain * 100) / 100,
       harmonic: hn,
       role: h.role,
-      ...(instrument.filter && { filter: instrument.filter }),
-      ...(instrument.filterEnvelope && { filterEnvelope: instrument.filterEnvelope }),
+      ...(adjustedFilter && { filter: adjustedFilter }),
+      ...(adjustedFilterEnv && { filterEnvelope: adjustedFilterEnv }),
       ...(instrument.vibrato && { vibrato: instrument.vibrato }),
       ...(instrument.vibratoDelay != null && { vibratoDelay: instrument.vibratoDelay }),
       ...(instrument.tremolo && { tremolo: instrument.tremolo }),
@@ -325,8 +368,8 @@ function buildLayers(instrument, modifiers) {
   // Noise layer
   if (instrument.noise) {
     let noiseGain = instrument.noise.gain
-    if (modifiers.harsh) noiseGain = Math.min(noiseGain * 1.5, 1.0)
-    if (modifiers.soft) noiseGain *= 0.5
+    if (modifiers.harsh) noiseGain = Math.min(noiseGain * 2.0, 1.0)
+    if (modifiers.soft) noiseGain *= 0.3
 
     layers.push({
       waveShape: 'noise',
@@ -350,8 +393,9 @@ function buildLayers(instrument, modifiers) {
 // ─── Build Description ───────────────────────────────────────────────────────
 
 function buildDescription(instrument, layers, modifiers) {
-  const modText = Object.keys(modifiers).length > 0
-    ? ` (${Object.keys(modifiers).join(', ')})`
+  const modKeys = Object.keys(modifiers)
+  const modText = modKeys.length > 0
+    ? ` — ${modKeys.join(', ')} modifier${modKeys.length > 1 ? 's' : ''} applied`
     : ''
   const hLayers = layers.filter((l) => l.waveShape !== 'noise')
   const nLayers = layers.filter((l) => l.waveShape === 'noise')
@@ -381,6 +425,15 @@ function buildDescription(instrument, layers, modifiers) {
     desc += `\n• ${nLayers.map((l) => l.role).join(', ')}`
   }
 
+  // Explain modifier effects clearly
+  if (modKeys.length > 0) {
+    desc += '\n\n**Modifier effects:**'
+    if (modifiers.bright) desc += '\n• **Bright** — boosted upper harmonics, filter opened wider for more high-frequency content'
+    if (modifiers.warm) desc += '\n• **Warm** — reduced upper harmonics, filter lowered for a darker, mellower tone'
+    if (modifiers.soft) desc += '\n• **Soft** — slower attack, reduced harmonics & noise, gentler filter resonance'
+    if (modifiers.harsh) desc += '\n• **Harsh** — faster attack, boosted harmonics & noise, sharper filter resonance'
+  }
+
   desc += `\n\nADSR: A=${instrument.envelope.attack}s, D=${instrument.envelope.decay}s, S=${Math.round(instrument.envelope.sustain * 100)}%, R=${instrument.envelope.release}s`
   desc += `\nBase octave: ${instrument.octave}, Wave: ${instrument.waveShape}`
 
@@ -404,7 +457,8 @@ export function parseInstrumentQuery(query) {
   }
 
   const modifiers = detectModifiers(query)
-  const instrument = findInstrument(query)
+  const cleanedQuery = stripModifiers(query)
+  const instrument = findInstrument(cleanedQuery)
 
   if (!instrument) {
     const available = Object.values(INSTRUMENTS).map((i) => i.name).join(', ')

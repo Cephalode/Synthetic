@@ -1,5 +1,7 @@
 import { useRef, useCallback } from 'react'
 
+const EPSILON = 0.00001  // floor for exponentialRamp (can't target 0)
+
 function midiToFreq(midi) {
   return 440 * Math.pow(2, (midi - 69) / 12)
 }
@@ -9,15 +11,30 @@ function applyEnvelope(gainNode, ctx, env, time, peak, percussive) {
   const g = gainNode.gain
   g.cancelScheduledValues(time)
   g.setValueAtTime(0, time)
+  // Attack: linear is fine (most synths use linear attack)
   g.linearRampToValueAtTime(peak, time + attack)
-  g.linearRampToValueAtTime(percussive ? 0 : peak * sustain, time + attack + decay)
+  // Decay: exponential approach to sustain level
+  const sustainLevel = percussive ? EPSILON : Math.max(peak * sustain, EPSILON)
+  g.setTargetAtTime(sustainLevel, time + attack, Math.max(decay / 3, 0.001))
 }
 
 function releaseEnvelope(gainNode, ctx, env, time) {
   const g = gainNode.gain
+  // MUST read current value BEFORE cancelScheduledValues
+  const currentVal = g.value
   g.cancelScheduledValues(time)
-  g.setValueAtTime(g.value, time)
-  g.linearRampToValueAtTime(0, time + (env.release || 0.3))
+  g.setValueAtTime(currentVal, time)
+  const releaseTime = env.release || 0.3
+  // Exponential decay to silence using setTargetAtTime
+  g.setTargetAtTime(EPSILON, time, Math.max(releaseTime / 3, 0.001))
+  // Ensure we hit true zero after release is done
+  g.linearRampToValueAtTime(0, time + releaseTime + 0.05)
+}
+
+function releaseFilterEnvelope(filterNode, baseFreq, time, releaseTime) {
+  const f = filterNode.frequency
+  f.cancelScheduledValues(time)
+  f.setTargetAtTime(baseFreq, time, Math.max(releaseTime / 3, 0.001))
 }
 
 export default function useSynthEngine() {
@@ -44,7 +61,20 @@ export default function useSynthEngine() {
   const noteOn = useCallback((midiNote, layers) => {
     const ctx = getCtx()
     const key = `_global_${midiNote}`
-    if (activeRef.current[key]) return
+    // Retrigger: steal existing note if playing
+    if (activeRef.current[key]) {
+      const oldVoices = activeRef.current[key]
+      const t = ctx.currentTime
+      for (const voice of oldVoices) {
+        for (const node of voice.nodes) {
+          try {
+            if (node instanceof OscillatorNode || node instanceof AudioBufferSourceNode) node.stop(t)
+            node.disconnect()
+          } catch { /* already stopped */ }
+        }
+      }
+      delete activeRef.current[key]
+    }
     const voices = []
 
     for (const layer of layers) {
@@ -65,7 +95,12 @@ export default function useSynthEngine() {
         src.connect(flt); flt.connect(gain); gain.connect(ctx.destination)
         applyEnvelope(gain, ctx, env, t, peak, layer.percussive)
         src.start(t)
-        voices.push({ nodes: [src, flt, gain], envelope: { gainNode: gain, envelope: env } })
+        voices.push({
+          nodes: [src, flt, gain],
+          envelope: { gainNode: gain, envelope: env },
+          filterNode: null,
+          filterBase: null,
+        })
       } else {
         // ── Oscillator layer with optional DSP features ──
         const uni = layer.unison || { voices: 1, detune: 0 }
@@ -80,12 +115,15 @@ export default function useSynthEngine() {
           filterNode.Q.setValueAtTime(layer.filter.Q || 1, t)
           filterNode.connect(dest); dest = filterNode
           if (layer.filterEnvelope) {
-            const base = layer.filter.frequency || 5000
+            const base = Math.max(layer.filter.frequency || 5000, 20)  // ensure > 0
             const fe = layer.filterEnvelope
             const f = filterNode.frequency
             f.setValueAtTime(base, t)
-            f.linearRampToValueAtTime(base + (fe.amount || 3000), t + (fe.attack || 0.01))
-            f.linearRampToValueAtTime(base, t + (fe.attack || 0.01) + (fe.decay || 0.1))
+            // Attack: exponential ramp up
+            f.exponentialRampToValueAtTime(base + (fe.amount || 3000), t + (fe.attack || 0.01))
+            // Decay: exponential approach back to base
+            const decayTime = fe.decay || 0.1
+            f.setTargetAtTime(base, t + (fe.attack || 0.01), Math.max(decayTime / 3, 0.001))
           }
         }
 
@@ -118,8 +156,8 @@ export default function useSynthEngine() {
             const d = layer.fm.depth || 200
             const a = layer.fm.attack || 0.01, dc = layer.fm.decay || 0.15
             mGain.gain.setValueAtTime(d, t)
-            mGain.gain.setValueAtTime(d, t + a)
-            mGain.gain.linearRampToValueAtTime(0, t + a + dc)
+            // Use setTargetAtTime for exponential FM depth decay
+            mGain.gain.setTargetAtTime(EPSILON, t + a, Math.max(dc / 3, 0.001))
             mOsc.connect(mGain); mGain.connect(osc.frequency)
             mOsc.start(t)
             all.push(mOsc, mGain)
@@ -157,7 +195,12 @@ export default function useSynthEngine() {
           all.push(tl, tg)
         }
 
-        voices.push({ nodes: all, envelope: { gainNode: mainGain, envelope: env } })
+        voices.push({
+          nodes: all,
+          envelope: { gainNode: mainGain, envelope: env },
+          filterNode: filterNode || null,
+          filterBase: layer.filter ? (layer.filter.frequency || 5000) : null,
+        })
       }
     }
 
@@ -172,13 +215,25 @@ export default function useSynthEngine() {
 
     for (const voice of voices) {
       releaseEnvelope(voice.envelope.gainNode, ctx, voice.envelope.envelope, t)
-      const stop = t + (voice.envelope.envelope.release || 0.3) + 0.05
+      if (voice.filterNode && voice.filterBase) {
+        releaseFilterEnvelope(voice.filterNode, voice.filterBase, t, voice.envelope.envelope.release || 0.3)
+      }
+      const releaseTime = voice.envelope.envelope.release || 0.3
+      const stopTime = t + releaseTime + 0.05
       for (const node of voice.nodes) {
         try {
-          if (node instanceof OscillatorNode || node instanceof AudioBufferSourceNode) node.stop(stop)
-          node.disconnect()
+          if (node instanceof OscillatorNode || node instanceof AudioBufferSourceNode) {
+            node.stop(stopTime)
+          }
         } catch { /* already stopped */ }
       }
+      // Delay disconnect until after release + stop have finished
+      const nodes = voice.nodes
+      setTimeout(() => {
+        for (const node of nodes) {
+          try { node.disconnect() } catch { /* already disconnected */ }
+        }
+      }, (releaseTime + 0.1) * 1000)
     }
 
     delete activeRef.current[key]

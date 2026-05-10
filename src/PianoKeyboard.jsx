@@ -109,7 +109,7 @@ export default function PianoKeyboard({ baseOctave, noteOn, noteOff, layers }) {
 
   // Map white note index → which black key sits to its right
   // Pattern per octave: C→C#, D→D#, (skip E), F→F#, G→G#, A→A#, (skip B)
-  const blackAfterWhite = { 0: true, 1: true, 3: true, 4: true, 5: true } // index in octave
+  // const blackAfterWhite = { 0: true, 1: true, 3: true, 4: true, 5: true }
 
   return (
     <div className="keyboard-section">
@@ -119,7 +119,7 @@ export default function PianoKeyboard({ baseOctave, noteOn, noteOff, layers }) {
         activeNotes.forEach((s) => triggerOff(s))
       }}>
         {/* White keys */}
-        {whiteNotes.map((note, wi) => {
+        {whiteNotes.map((note) => {
           const isActive = activeNotes.has(note.semiTone)
           const kbKey = KEY_LABELS[note.semiTone]
           return (
@@ -145,11 +145,8 @@ export default function PianoKeyboard({ baseOctave, noteOn, noteOff, layers }) {
             const isBlack = [1, 3, 6, 8, 10].includes(noteInOctave)
             if (!isBlack) {
               // Check if next note is a black key
-              const nextNoteInOctave = (noteInOctave + 1) % 12
               if ([1, 3, 6, 8, 10].includes((i + 1) < 25 ? (i + 1) % 12 : -1) && i + 1 < 25) {
                 const semi = i + 1
-                const octaveNum = baseOctave + Math.floor(semi / 12)
-                const name = NOTE_NAMES[semi % 12] + octaveNum
                 const kbKey = KEY_LABELS[semi]
                 const isActive = activeNotes.has(semi)
                 const leftPos = (whiteIndex + 1) * WHITE_KEY_WIDTH - BLACK_KEY_WIDTH / 2 - 1

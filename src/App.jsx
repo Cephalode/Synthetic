@@ -11,6 +11,7 @@ const DEFAULT_LAYER = {
   sustain: 0.7,
   release: 0.3,
   octave: 4,
+  instrumentProfile: null,
 };
 
 let nextId = 2;
@@ -18,7 +19,7 @@ let nextId = 2;
 export default function App() {
   const [layers, setLayers] = useState([{ id: 1, ...DEFAULT_LAYER }]);
   const [baseOctave, setBaseOctave] = useState(4);
-  const { noteOn, noteOff } = useSynthEngine(layers);
+  const { noteOn, noteOff } = useSynthEngine();
 
   const addLayer = useCallback(() => {
     setLayers((prev) => [...prev, { id: nextId++, ...DEFAULT_LAYER }]);

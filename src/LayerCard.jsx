@@ -24,6 +24,14 @@ export default function LayerCard({ layer, index, onUpdate, onDelete }) {
           {layer.harmonic > 1 && <span className="harmonic-badge">×{layer.harmonic}</span>}
           {layer.waveShape === 'noise' && <span className="harmonic-badge noise-badge">Noise</span>}
           <span className="layer-badge">{layer.waveShape}</span>
+          {/* DSP feature badges */}
+          {layer.vibrato && <span className="dsp-badge vibrato-badge">Vibrato</span>}
+          {layer.fm && <span className="dsp-badge fm-badge">FM</span>}
+          {layer.unison && layer.unison.voices > 1 && (
+            <span className="dsp-badge unison-badge">Unison ×{layer.unison.voices}</span>
+          )}
+          {layer.filter && <span className="dsp-badge filter-badge">Filtered</span>}
+          {layer.percussive && <span className="dsp-badge percussive-badge">Percussive</span>}
         </div>
         <div className="layer-actions">
           <button

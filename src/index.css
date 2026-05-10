@@ -723,6 +723,41 @@ input[type="range"]::-moz-range-thumb {
   color: #ff5555;
 }
 
+/* ── DSP Feature Badges ── */
+.dsp-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.dsp-badge.vibrato-badge {
+  background: rgba(107, 203, 255, 0.2);
+  color: #6bcbff;
+}
+
+.dsp-badge.fm-badge {
+  background: rgba(255, 107, 157, 0.2);
+  color: #ff6b9d;
+}
+
+.dsp-badge.unison-badge {
+  background: rgba(80, 250, 123, 0.2);
+  color: #50fa7b;
+}
+
+.dsp-badge.filter-badge {
+  background: rgba(192, 132, 252, 0.2);
+  color: #c084fc;
+}
+
+.dsp-badge.percussive-badge {
+  background: rgba(255, 85, 85, 0.2);
+  color: #ff5555;
+}
+
 /* ── Layer Name (replaces "Layer N" when role exists) ── */
 .layer-name {
   font-weight: 600;

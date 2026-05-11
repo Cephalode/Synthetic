@@ -70,15 +70,16 @@ Each layer object may contain the following fields:
 ## Acoustic Synthesis Guidance
 
 ### Brass (trumpet, trombone, french horn, tuba)
-- Wave: sine fundamental with sawtooth on upper harmonics, or pure sine with FM for buzz
-- Harmonics: strong H1-H4, gradually rolling off. Higher harmonics brighter during fortissimo
-- Attack: 0.01-0.03s (fast but not instantaneous — lips need time to buzz)
-- Sustain: 0.6-0.8 (brass sustains well while blowing)
-- Filter: lowpass sweep from high cutoff down (bright attack → warm sustain). Filter envelope amount 2000-4000Hz
-- FM: adds brass "buzz" — use ratio 1, depth 80-200, fast attack, medium decay (buzz fades after initial hit)
-- Vibrato: 4-5.5 Hz, depth 5-8 cents, delay 0.3-0.5s (vibrato is a late expressive technique)
-- Noise: short bandpass-filtered burst (2-4kHz) for attack "bark" or "tonguing"
-- Octave: 3-4 for trumpet/cornet, 2-3 for trombone/tuba
+- Wave: sine fundamental with FM for buzz. Trumpet/cornet are brighter; trombone/tuba are warmer and darker
+- Trumpet harmonics: strong H1-H4 (0.65, 0.38, 0.22, 0.10), filter at 4000Hz, FM depth 150
+- Trombone harmonics: strong H1-H5 (0.6, 0.4, 0.25, 0.12, 0.06), broader spectrum, filter at 3000Hz (darker), FM depth 120, octave 3, slower attack (0.025s), wider vibrato delay (0.4s)
+- Attack: 0.01-0.03s (fast but not instantaneous — lips need time to buzz). Trombone slightly slower than trumpet
+- Sustain: 0.7-0.75 (brass sustains well while blowing)
+- Filter: lowpass sweep from high cutoff down (bright attack → warm sustain). Filter envelope amount 2000-3000Hz. Trumpet cutoff ~4000Hz, trombone ~3000Hz, tuba ~2000Hz
+- FM: adds brass "buzz" — use ratio 1, depth 80-200, fast attack, medium decay (buzz fades after initial hit). Trumpet=150, trombone=120, french horn=80
+- Vibrato: 4.5-5.5 Hz, depth 5-8 cents, delay 0.3-0.5s (vibrato is a late expressive technique)
+- Noise: short bandpass-filtered burst (2-4kHz) for attack "bark" or "tonguing". Trombone has slightly lower, longer blat (2.5kHz)
+- Octave: trumpet/cornet=4, trombone=3, french horn=3, tuba=2
 
 ### Strings — bowed (violin, viola, cello, double bass)
 - Wave: sawtooth fundamental (models bow friction spectrum), sine reinforcement for upper partials
@@ -92,26 +93,30 @@ Each layer object may contain the following fields:
 - Key difference from plucked strings: bowed strings sustain while held; plucked strings decay
 
 ### Strings — plucked (guitar, harp, banjo, mandolin, ukulele, sitar)
-- Wave: triangle or sine (triangle for guitar/mandolin brightness, sine for harp purity)
-- Harmonics: H1 dominant, H2-H5 decreasing; for sitar include sympathetic resonances at unusual ratios
+- Wave: triangle or sine (triangle for guitar/mandolin/banjo brightness, sine for harp purity)
+- Guitar harmonics: H1-H5 (0.8, 0.3, 0.15, 0.07, 0.03), triangle wave, filter at 3500Hz, filter envelope 1500Hz
+- Banjo harmonics: H1-H6 with stronger upper partials (0.55, 0.4, 0.3, 0.2, 0.12, 0.06), triangle wave, filter at 6000Hz (very bright — drum-head body), filter envelope 3000Hz, fast decay (0.5s), very low sustain (0.05), louder pluck noise (0.12 gain)
+- Mandolin: like guitar but brighter, faster decay, octave 4
+- Harp: pure sine harmonics, very long decay (3s for H1), near-zero sustain, crystalline tone
+- Sitar: include sympathetic resonances at unusual harmonic ratios
 - Attack: 0.001-0.005s (nearly instant — pluck is very fast)
-- Decay: per-harmonic decay (higher harmonics decay faster than fundamental). Use decay field on each harmonic
-- Sustain: 0-0.15 (plucked strings decay naturally, no true sustain)
-- Release: 0.3-1.0 (allow natural ring-off)
-- Filter: lowpass with filter envelope (bright attack → warm decay). Guitar: 3000-4000Hz base, 1500Hz envelope
-- Noise: very short bandpass burst (3-6kHz) for pluck/pick transient
+- Decay: per-harmonic decay (higher harmonics decay faster than fundamental). Use decay field on each harmonic. Banjo decays much faster than guitar
+- Sustain: 0-0.15 (plucked strings decay naturally, no true sustain). Banjo near 0
+- Release: 0.3-1.0 (allow natural ring-off). Banjo short (0.15s)
+- Filter: lowpass with filter envelope (bright attack → warm decay). Guitar: 3500Hz base, 1500Hz envelope. Banjo: 6000Hz base (brighter)
+- Noise: very short bandpass burst for pluck/pick transient. Banjo louder (0.12) and brighter (5kHz) than guitar
 - percussive: true (decays to silence)
 - Octave: guitar=3, harp=4, banjo=4, mandolin=4, ukulele=4
 
 ### Woodwinds — reed (clarinet, saxophone, oboe, bassoon)
-- Clarinet: ODD harmonics only (H1, H3, H5, H7, H9) — cylindrical bore creates this distinctive timbre
-- Saxophone: ALL harmonics (H1-H6+), sawtooth wave, brighter timbre from conical bore
-- Oboe: strong H1-H5, bright penetrating tone, bandpass filter at 1500-2500Hz for formant
+- Clarinet: ODD harmonics only (H1, H3, H5, H7, H9) — cylindrical bore creates this distinctive timbre. Bandpass filter at 2000Hz, FM depth 80
+- Saxophone: ALL harmonics (H1-H6+), sawtooth wave, brighter timbre from conical bore. Lowpass at 3500Hz, FM depth 100
+- Oboe: ALL harmonics with strong upper partials (H1-H6: 0.55, 0.35, 0.3, 0.18, 0.12, 0.06), sawtooth wave, bandpass filter at 2500Hz with high Q (2.0) for nasal formant. FM depth 180 (stronger than single-reed — double reed buzzes more intensely). Octave 5 (soprano range). Short attack (0.025s), penetrating tone
 - Bassoon: H1-H5, darker tone, lower filter frequency (1000-2000Hz)
-- Attack: 0.02-0.04s (reed needs to start vibrating)
-- FM: subtle reed buzz (ratio 1, depth 60-120, fast attack, medium decay)
+- Attack: 0.02-0.04s (reed needs to start vibrating). Oboe slightly faster than sax
+- FM: reed buzz (ratio 1, depth 60-180, fast attack, medium decay). Oboe uses highest FM depth (180) for the double-reed character
 - Vibrato: 4-5 Hz, delay 0.3-0.5s (player technique)
-- Noise: bandpass reed/breath noise (2-3kHz), short attack+decay
+- Noise: bandpass reed/breath noise (2-3kHz), short attack+decay. Oboe noise is higher-pitched (3kHz) and shorter
 - Octave: clarinet=4, alto sax=4, tenor sax=3, oboe=5, bassoon=2-3
 
 ### Woodwinds — flute family (flute, piccolo, recorder)
@@ -127,13 +132,13 @@ Each layer object may contain the following fields:
 ### Keyboard (piano, Rhodes, organ, harpsichord, clavinet, celesta)
 - Piano: sine waves with INHARMONIC partials (multiply by 1.002^n for stiffness), 3-voice unison, percussive, fast attack, long decay, zero sustain, hammer strike noise
 - Rhodes: sine with inharmonics, prominent 3rd partial, FM for "bite" (depth 40-80), 2-voice subtle unison, percussive, tine strike noise
-- Organ: pure sine additive (drawbar registration — sub 0.5x through 8th harmonic 8x), instant attack/release, sustain=1.0, tremolo for Leslie
+- Organ: pure sine additive (drawbar registration — sub 0.5x through 8th harmonic 8x), instant attack/release, sustain=1.0, tremolo at 6.8Hz with 0.2 depth for Leslie speaker simulation
 - Harpsichord: sawtooth/square, fast pluck, very bright (high filter cutoff), percussive, pluck noise
 - Octave: piano=4, Rhodes=4, organ=3-4, harpsichord=4
 
 ### Percussion — pitched (marimba, vibraphone, xylophone, glockenspiel, tubular bells, timpani, steel drum)
-- Marimba: sine, prominent 4th harmonic (bar transverse mode), inharmonic partials at ~9.4x, percussive, mallet strike noise
-- Vibraphone: like marimba but add tremolo (5-7Hz) for motor-driven vibrato effect, longer sustain
+- Marimba: sine, prominent 4th harmonic (bar transverse mode, gain 0.3), inharmonic partials at ~9.4x, percussive, mallet strike noise at 7kHz
+- Vibraphone: like marimba but with metal bars — longer decay (2.5s for H1), tremolo at 5.5Hz with 0.25 depth (motor-driven rotating resonator discs create the "shimmer"), slightly lower harmonics (0.75, 0.25, 0.06), softer mallet noise (yarn-wound on metal), longer release (0.8s). Sustain 0.1 (metal rings longer than wood)
 - Glockenspiel: sine, bright, high octave (5-6), fast decay, very high filter
 - Timpani: sine, low octave (2), strong H1 only, long decay, percussive, mallet/felt noise
 - All: percussive=true, zero sustain, mallet/strike noise transient

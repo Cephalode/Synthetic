@@ -68,7 +68,7 @@ export default function App() {
       </header>
 
       <div className="app-content">
-        <AiChat onGenerateLayers={handleAiGenerate} onClearLayers={handleClearLayers} />
+        <AiChat onGenerateLayers={handleAiGenerate} onClearLayers={handleClearLayers} currentLayers={layers} />
 
         <div className="synth-panel">
           <section className="layers">

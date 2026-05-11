@@ -410,6 +410,115 @@ export const INSTRUMENTS = {
     waveShape: 'sine',
     description: 'A sawtooth fundamental with lowpass filtering at 800Hz creates the thumpy, round bass tone. The filter envelope opens briefly on attack for the initial "thwack". Low-frequency noise adds finger/string character.',
   },
+
+  // ─── Strings (plucked) — electric ──────────────────────────────────────
+
+  'electric guitar': {
+    name: 'Electric Guitar',
+    harmonics: [
+      { harmonic: 1, gain: 0.53, role: 'Fundamental (H1)', decay: 1.8, waveShape: 'sawtooth' },
+      { harmonic: 2, gain: 0.33, role: '2nd Harmonic (H2)', decay: 1.4 },
+      { harmonic: 3, gain: 0.24, role: '3rd Harmonic (H3)', decay: 1.0 },
+      { harmonic: 4, gain: 0.14, role: '4th Harmonic (H4)', decay: 0.7 },
+      { harmonic: 5, gain: 0.07, role: '5th Harmonic (H5)', decay: 0.5 },
+      { harmonic: 6, gain: 0.04, role: '6th Harmonic (H6)', decay: 0.35 },
+    ],
+    envelope: { attack: 0.001, decay: 0.6, sustain: 0.2, release: 0.4 },
+    filter: { type: 'lowpass', frequency: 4500, Q: 1.2 },
+    filterEnvelope: { amount: 2500, attack: 0.001, decay: 0.2 },
+    percussive: true,
+    unison: { voices: 2, detune: 4 },
+    noise: {
+      noiseFilterFreq: 6000, noiseFilterQ: 1.0, noiseFilterType: 'bandpass',
+      gain: 0.1, role: 'Pick Transient',
+      attack: 0.001, decay: 0.015, sustain: 0, release: 0.01,
+    },
+    octave: 3,
+    waveShape: 'triangle',
+    description: 'Sawtooth fundamental models the rich harmonic content of magnetic pickup induction. Electric guitar has stronger upper harmonics than acoustic guitar (pickup captures full string vibration vs soundboard resonance). The filter sits higher (4500Hz) and uses moderate Q for the characteristic pickup position coloration. 2-voice unison with 4-cent detune simulates chorus effect from slightly out-of-tune strings. Filter envelope sweeps from bright attack to warm sustain. Triangle wave harmonics fill out the midrange body. Octave 3 covers the standard guitar range E2-E5.',
+  },
+
+  // ─── Woodwinds (flute) — recorder ─────────────────────────────────────
+
+  recorder: {
+    name: 'Recorder',
+    harmonics: [
+      { harmonic: 1, gain: 0.85, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.12, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.04, role: '3rd Harmonic (H3)' },
+    ],
+    envelope: { attack: 0.05, decay: 0.08, sustain: 0.78, release: 0.25 },
+    filter: { type: 'lowpass', frequency: 4500, Q: 0.5 },
+    noise: {
+      noiseFilterFreq: 3500, noiseFilterQ: 0.4, noiseFilterType: 'highpass',
+      gain: 0.06, role: 'Windway Breath Noise',
+      attack: 0.03, decay: 0.06, sustain: 0.25, release: 0.1,
+    },
+    octave: 5,
+    waveShape: 'sine',
+    description: 'The recorder is an internal-duct (fipple) flute with a nearly pure sinusoidal tone. Its spectrum is even simpler than the concert flute — the cylindrical bore and windway design produce weaker harmonics (H2 at only 0.12 vs flute\'s 0.20). Slightly slower attack (0.05s) than flute models the windway airstream buildup. No vibrato — recorder players traditionally use no vibrato (unlike modern flute technique). Lower filter cutoff (4500Hz) reflects the softer, more rounded timbre. Subtle highpass windway breath noise is softer and lower-pitched than flute\'s (the windway dampens breath turbulence). Octave 5 is correct for soprano recorder range C5-D7.',
+  },
+
+  // ─── Percussion (pitched) — timpani ───────────────────────────────────
+
+  timpani: {
+    name: 'Timpani',
+    harmonics: [
+      { harmonic: 1, gain: 0.8, role: 'Fundamental (H1)', decay: 3.0 },
+      { harmonic: 1.5, gain: 0.25, role: 'Inharmonic partial (1.5x)', decay: 2.0 },
+      { harmonic: 2.0, gain: 0.15, role: '2nd mode (2.0x)', decay: 1.5 },
+    ],
+    envelope: { attack: 0.003, decay: 2.5, sustain: 0, release: 0.8 },
+    filter: { type: 'lowpass', frequency: 1200, Q: 0.6 },
+    percussive: true,
+    noise: {
+      noiseFilterFreq: 1500, noiseFilterQ: 0.5, noiseFilterType: 'lowpass',
+      gain: 0.12, role: 'Felt Mallet Strike',
+      attack: 0.001, decay: 0.025, sustain: 0, release: 0.015,
+    },
+    octave: 2,
+    waveShape: 'sine',
+    description: 'Timpani (kettledrum) produces a definite pitch from a stretched membrane over a resonating bowl. The spectrum is dominated by the fundamental with inharmonic partials at ~1.5x and 2.0x — these are membrane vibration modes that don\'t follow integer harmonic ratios. The lowpass filter at 1200Hz keeps the tone deep and focused. Long decay (3s for H1) with zero sustain and percussive envelope models the natural exponential ring of a large drumhead. Low-frequency felt mallet noise adds the characteristic "thud" attack. Octave 2 places it in the correct bass range (D2-A3 for standard timpani). The 1.5x partial is a key distinguishing feature of membrane instruments.',
+  },
+
+  // ─── Electronic ──────────────────────────────────────────────────────
+
+  '808 bass': {
+    name: '808 Bass',
+    harmonics: [
+      { harmonic: 1, gain: 0.9, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.35, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.12, role: '3rd Harmonic (H3)' },
+    ],
+    envelope: { attack: 0.001, decay: 0.8, sustain: 0.6, release: 0.15 },
+    filter: { type: 'lowpass', frequency: 500, Q: 4 },
+    filterEnvelope: { amount: 600, attack: 0.001, decay: 0.08 },
+    noise: null,
+    octave: 1,
+    waveShape: 'sine',
+    description: 'The Roland TR-808 kick/bass is iconic in electronic music. Pure sine wave with a resonant lowpass filter (Q=4) creates the punchy, focused low-end. The filter envelope sweeps from 1100Hz down to 500Hz for the characteristic "punch" at attack. Very low octave (1) produces sub-bass frequencies. Sine wave is essential — the real 808 uses a sine oscillator with a short pitch sweep. Higher sustain (0.6) allows sustained bass notes unlike percussive 808 kicks. No noise — the 808 bass is purely synthetic and clean. The resonant filter (Q=4) is key to the 808\'s distinctive focused, slightly nasal tone.',
+  },
+
+  'synth pad': {
+    name: 'Synth Pad',
+    harmonics: [
+      { harmonic: 1, gain: 0.4, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.25, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.18, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.1, role: '4th Harmonic (H4)' },
+      { harmonic: 5, gain: 0.05, role: '5th Harmonic (H5) — shimmer' },
+    ],
+    envelope: { attack: 0.8, decay: 0.5, sustain: 0.85, release: 1.5 },
+    filter: { type: 'lowpass', frequency: 2500, Q: 0.8 },
+    filterEnvelope: { amount: 1500, attack: 0.6, decay: 0.8 },
+    unison: { voices: 5, detune: 12 },
+    vibrato: { rate: 4.0, depth: 3 },
+    vibratoDelay: 1.0,
+    noise: null,
+    octave: 4,
+    waveShape: 'sawtooth',
+    description: 'A classic analog-style synth pad with slow evolving timbre. Slow attack (0.8s) and long release (1.5s) create the characteristic "wash" of sound that fades in and out smoothly. 5-voice unison with 12-cent detune produces a rich, wide, chorused ensemble effect — this is the key to the pad\'s lush, thick character. Sawtooth wave provides rich harmonic content that the filter shapes over time. The filter envelope slowly opens and closes (1.5s sweep) creating an evolving timbral movement. Very subtle vibrato (3 cents) with long delay (1.0s) adds gentle movement after the pad has fully developed. High sustain (0.85) keeps the pad at full volume while held.',
+  },
 }
 
 // ─── Alias Map (common typos / alternate names) ──────────────────────────────
@@ -475,4 +584,25 @@ export const ALIASES = {
 
   // Vibraphone
   vibes: 'vibraphone', vibraphon: 'vibraphone', vibe: 'vibraphone',
+
+  // Electric Guitar
+  'elec guitar': 'electric guitar', 'e guitar': 'electric guitar',
+  'electric gtr': 'electric guitar', eguitar: 'electric guitar',
+  'elec gtr': 'electric guitar',
+
+  // Recorder
+  recordr: 'recorder', 'block flute': 'recorder',
+  'english flute': 'recorder', 'fipple flute': 'recorder',
+
+  // Timpani
+  timpano: 'timpani', kettle: 'timpani', kettledrum: 'timpani',
+  'kettle drum': 'timpani', timp: 'timpani',
+
+  // 808 Bass
+  '808': '808 bass', '808bass': '808 bass', '808 kick': '808 bass',
+  'tr808': '808 bass', subbass: '808 bass', 'sub bass': '808 bass',
+
+  // Synth Pad
+  pad: 'synth pad', 'synthpad': 'synth pad',
+  'string pad': 'synth pad', 'analog pad': 'synth pad',
 }

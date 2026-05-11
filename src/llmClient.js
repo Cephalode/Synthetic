@@ -120,14 +120,10 @@ Each layer object may contain the following fields:
 - Octave: clarinet=4, alto sax=4, tenor sax=3, oboe=5, bassoon=2-3
 
 ### Woodwinds — flute family (flute, piccolo, recorder)
-- Wave: pure sine (flutes produce nearly sinusoidal tones)
-- Harmonics: H1 dominant, H2 weak (0.15-0.25), H3 very weak (0.05-0.1)
-- Attack: 0.04-0.08s (breath needs to build up — slower than reeds)
-- Sustain: 0.75-0.85
-- Vibrato: 4.5-5.5 Hz, depth 6-10 cents, delay 0.3-0.5s
-- Filter: lowpass 5000-7000Hz, low Q
-- Noise: highpass or bandpass breath noise (4-6kHz), sustained at low level (flute has continuous airflow)
-- Octave: flute=5, piccolo=6, recorder=5
+- Flute: Wave: pure sine, H1 dominant (1.0), H2 weak (0.2), H3 very weak (0.06). Attack 0.04-0.08s, sustain 0.8, vibrato 5Hz/8 cents with 0.4s delay. Lowpass 6000Hz, highpass breath noise at 5000Hz gain 0.08. Octave 5
+- Recorder: Wave: pure sine, even simpler spectrum than flute — H1 dominant (0.85), H2 very weak (0.12), H3 barely present (0.04). Attack 0.05s (slightly slower than flute — windway airstream builds up). NO vibrato — recorder tradition uses none. Lowpass 4500Hz (softer, rounder timbre). Softer highpass breath noise at 3500Hz gain 0.06 (windway dampens turbulence). Octave 5 (soprano recorder C5-D7)
+- Piccolo: like flute but octave 6, brighter filter, less breath noise
+- Key differences: recorder has weaker harmonics, no vibrato, softer/rounder timbre than flute
 
 ### Keyboard (piano, Rhodes, organ, harpsichord, clavinet, celesta)
 - Piano: sine waves with INHARMONIC partials (multiply by 1.002^n for stiffness), 3-voice unison, percussive, fast attack, long decay, zero sustain, hammer strike noise
@@ -136,21 +132,35 @@ Each layer object may contain the following fields:
 - Harpsichord: sawtooth/square, fast pluck, very bright (high filter cutoff), percussive, pluck noise
 - Octave: piano=4, Rhodes=4, organ=3-4, harpsichord=4
 
-### Percussion — pitched (marimba, vibraphone, xylophone, glockenspiel, tubular bells, timpani, steel drum)
-- Marimba: sine, prominent 4th harmonic (bar transverse mode, gain 0.3), inharmonic partials at ~9.4x, percussive, mallet strike noise at 7kHz
-- Vibraphone: like marimba but with metal bars — longer decay (2.5s for H1), tremolo at 5.5Hz with 0.25 depth (motor-driven rotating resonator discs create the "shimmer"), slightly lower harmonics (0.75, 0.25, 0.06), softer mallet noise (yarn-wound on metal), longer release (0.8s). Sustain 0.1 (metal rings longer than wood)
+### Pitched Percussion
+- Marimba: sine, prominent 4th harmonic (bar transverse mode, gain 0.3), inharmonic partials at ~9.4x, percussive, mallet strike noise at 7kHz. Zero sustain, fast attack, decay 1.2s for H1. Octave 4
+- Vibraphone: like marimba but metal bars — longer decay (2.5s H1), tremolo 5.5Hz/0.25 depth (motor-driven rotating resonator discs), softer mallet noise, sustain 0.1, release 0.8s. Octave 4
+- Timpani: sine fundamental with inharmonic membrane modes at 1.5x and 2.0x — these non-integer partials distinguish it from string instruments. Lowpass 1200Hz (deep, focused). Very long decay (3s H1), zero sustain, percussive. Felt mallet noise (lowpass 1500Hz, gain 0.12). Octave 2 (bass range D2-A3). The 1.5x partial is the signature of membrane vibration
 - Glockenspiel: sine, bright, high octave (5-6), fast decay, very high filter
-- Timpani: sine, low octave (2), strong H1 only, long decay, percussive, mallet/felt noise
 - All: percussive=true, zero sustain, mallet/strike noise transient
 
-### Synth Bass
-- Saw/square, low octave, short attack, moderate decay, low-pass filter, optional FM for grit.
+### Electronic / Synth
+- 808 Bass: Pure sine wave, resonant lowpass filter (Q=4) at 500Hz for punchy focused low-end. Filter envelope sweeps briefly (600Hz, fast decay 0.08s). Octave 1 for sub-bass. Sustain 0.6 for held notes. No noise — purely synthetic. Key: the high Q resonant filter gives the 808 its distinctive nasal focus
+- Synth Pad: Slow attack (0.8s) and release (1.5s) for smooth fade in/out. Sawtooth wave with 5-voice unison at 12-cent detune for lush, wide, chorused sound. Lowpass 2500Hz with slow filter envelope (0.6s attack, 0.8s decay) for evolving timbre. High sustain 0.85. Very subtle vibrato (3 cents) with 1.0s delay for gentle movement
+- Synth Bass: Saw/square, low octave, short attack, moderate decay, low-pass filter, optional FM for grit
+- Synth Lead: Saw/square with vibrato, filter envelope sweep, unison for thickness, moderate gain
 
-### Synth Lead
-- Saw/square with vibrato, filter envelope sweep, unison for thickness, moderate gain.
-
-### Pads
-- Slow attack and release, layered detuned waves (unison), low-pass filter, high sustain.
+### Strings — plucked (guitar, harp, banjo, mandolin, ukulele, sitar)
+- Wave: triangle or sine (triangle for guitar/mandolin/banjo brightness, sine for harp purity)
+- Acoustic Guitar harmonics: H1-H5 (0.8, 0.3, 0.15, 0.07, 0.03), triangle wave, filter at 3500Hz, filter envelope 1500Hz, percussive, per-harmonic decay (higher harmonics faster)
+- Electric Guitar harmonics: H1-H6 (0.53, 0.33, 0.24, 0.14, 0.07, 0.04), sawtooth fundamental for rich pickup tone, filter at 4500Hz (higher than acoustic — pickups capture full string vibration), filter envelope 2500Hz, 2-voice unison at 4 cents (slight chorus), pick noise at 6000Hz gain 0.10, percussive, octave 3
+- Banjo harmonics: H1-H6 with stronger upper partials (0.48, 0.32, 0.22, 0.14, 0.08, 0.04), triangle wave, filter at 6000Hz (very bright — drum-head body), fast decay (0.5s), very low sustain (0.05), louder pluck noise (0.12 gain at 5kHz)
+- Mandolin: like guitar but brighter, faster decay, octave 4
+- Harp: pure sine harmonics, very long decay (3s for H1), near-zero sustain, crystalline tone
+- Sitar: include sympathetic resonances at unusual harmonic ratios
+- Attack: 0.001-0.005s (nearly instant — pluck is very fast)
+- Decay: per-harmonic decay (higher harmonics decay faster than fundamental)
+- Sustain: 0-0.2 (plucked strings decay naturally, no true sustain). Banjo near 0
+- Release: 0.3-1.0 (allow natural ring-off). Banjo short (0.15s)
+- Filter: lowpass with filter envelope (bright attack → warm decay)
+- Noise: very short bandpass burst for pluck/pick transient
+- percussive: true (decays to silence)
+- Octave: acoustic guitar=3, electric guitar=3, harp=4, banjo=4, mandolin=4, ukulele=4
 
 ## Gain Budgeting
 

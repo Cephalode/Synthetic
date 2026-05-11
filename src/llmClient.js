@@ -69,14 +69,83 @@ Each layer object may contain the following fields:
 
 ## Acoustic Synthesis Guidance
 
-- **Brass:** Sawtooth waves with strong odd harmonics, medium attack, filter sweep (low base → high peak), FM buzz on top layers, unison for width.
-- **Strings:** Sawtooth or triangle waves, slow attack, sustain ~0.7, moderate vibrato with ~0.3s delay, unison for chorus effect.
-- **Woodwinds:** Sine/triangle fundamentals, emphasize odd harmonics, add slight breath noise via noise layer, gentle filter envelope.
-- **Piano:** Fast attack, short decay, low sustain, combine sine fundamental with harmonic overtones, optional percussive strike layer.
-- **Organ:** Sine waves at harmonic intervals, near-instant attack/release, no filter sweep, tremolo for Leslie effect.
-- **Synth Bass:** Saw/square, low octave, short attack, moderate decay, low-pass filter, optional FM for grit.
-- **Synth Lead:** Saw/square with vibrato, filter envelope sweep, unison for thickness, moderate gain.
-- **Pads:** Slow attack and release, layered detuned waves (unison), low-pass filter, high sustain.
+### Brass (trumpet, trombone, french horn, tuba)
+- Wave: sine fundamental with sawtooth on upper harmonics, or pure sine with FM for buzz
+- Harmonics: strong H1-H4, gradually rolling off. Higher harmonics brighter during fortissimo
+- Attack: 0.01-0.03s (fast but not instantaneous — lips need time to buzz)
+- Sustain: 0.6-0.8 (brass sustains well while blowing)
+- Filter: lowpass sweep from high cutoff down (bright attack → warm sustain). Filter envelope amount 2000-4000Hz
+- FM: adds brass "buzz" — use ratio 1, depth 80-200, fast attack, medium decay (buzz fades after initial hit)
+- Vibrato: 4-5.5 Hz, depth 5-8 cents, delay 0.3-0.5s (vibrato is a late expressive technique)
+- Noise: short bandpass-filtered burst (2-4kHz) for attack "bark" or "tonguing"
+- Octave: 3-4 for trumpet/cornet, 2-3 for trombone/tuba
+
+### Strings — bowed (violin, viola, cello, double bass)
+- Wave: sawtooth fundamental (models bow friction spectrum), sine reinforcement for upper partials
+- Harmonics: H1 dominant, H2-H6 decreasing gradually (rich harmonic content from bow)
+- Attack: 0.08-0.2s (bow needs time to grab the string — heavier strings = slower attack)
+- Sustain: 0.8-0.9 (sustained tone while bowing)
+- Vibrato: 4.5-6 Hz, depth 8-15 cents, delay 0.3-0.6s
+- Filter: lowpass 3000-5000Hz with low Q (body resonance)
+- Noise: subtle bandpass bow friction noise (1.5-3kHz) with slow attack matching bow engagement
+- Octave: violin=4, viola=3-4, cello=3, double bass=2
+- Key difference from plucked strings: bowed strings sustain while held; plucked strings decay
+
+### Strings — plucked (guitar, harp, banjo, mandolin, ukulele, sitar)
+- Wave: triangle or sine (triangle for guitar/mandolin brightness, sine for harp purity)
+- Harmonics: H1 dominant, H2-H5 decreasing; for sitar include sympathetic resonances at unusual ratios
+- Attack: 0.001-0.005s (nearly instant — pluck is very fast)
+- Decay: per-harmonic decay (higher harmonics decay faster than fundamental). Use decay field on each harmonic
+- Sustain: 0-0.15 (plucked strings decay naturally, no true sustain)
+- Release: 0.3-1.0 (allow natural ring-off)
+- Filter: lowpass with filter envelope (bright attack → warm decay). Guitar: 3000-4000Hz base, 1500Hz envelope
+- Noise: very short bandpass burst (3-6kHz) for pluck/pick transient
+- percussive: true (decays to silence)
+- Octave: guitar=3, harp=4, banjo=4, mandolin=4, ukulele=4
+
+### Woodwinds — reed (clarinet, saxophone, oboe, bassoon)
+- Clarinet: ODD harmonics only (H1, H3, H5, H7, H9) — cylindrical bore creates this distinctive timbre
+- Saxophone: ALL harmonics (H1-H6+), sawtooth wave, brighter timbre from conical bore
+- Oboe: strong H1-H5, bright penetrating tone, bandpass filter at 1500-2500Hz for formant
+- Bassoon: H1-H5, darker tone, lower filter frequency (1000-2000Hz)
+- Attack: 0.02-0.04s (reed needs to start vibrating)
+- FM: subtle reed buzz (ratio 1, depth 60-120, fast attack, medium decay)
+- Vibrato: 4-5 Hz, delay 0.3-0.5s (player technique)
+- Noise: bandpass reed/breath noise (2-3kHz), short attack+decay
+- Octave: clarinet=4, alto sax=4, tenor sax=3, oboe=5, bassoon=2-3
+
+### Woodwinds — flute family (flute, piccolo, recorder)
+- Wave: pure sine (flutes produce nearly sinusoidal tones)
+- Harmonics: H1 dominant, H2 weak (0.15-0.25), H3 very weak (0.05-0.1)
+- Attack: 0.04-0.08s (breath needs to build up — slower than reeds)
+- Sustain: 0.75-0.85
+- Vibrato: 4.5-5.5 Hz, depth 6-10 cents, delay 0.3-0.5s
+- Filter: lowpass 5000-7000Hz, low Q
+- Noise: highpass or bandpass breath noise (4-6kHz), sustained at low level (flute has continuous airflow)
+- Octave: flute=5, piccolo=6, recorder=5
+
+### Keyboard (piano, Rhodes, organ, harpsichord, clavinet, celesta)
+- Piano: sine waves with INHARMONIC partials (multiply by 1.002^n for stiffness), 3-voice unison, percussive, fast attack, long decay, zero sustain, hammer strike noise
+- Rhodes: sine with inharmonics, prominent 3rd partial, FM for "bite" (depth 40-80), 2-voice subtle unison, percussive, tine strike noise
+- Organ: pure sine additive (drawbar registration — sub 0.5x through 8th harmonic 8x), instant attack/release, sustain=1.0, tremolo for Leslie
+- Harpsichord: sawtooth/square, fast pluck, very bright (high filter cutoff), percussive, pluck noise
+- Octave: piano=4, Rhodes=4, organ=3-4, harpsichord=4
+
+### Percussion — pitched (marimba, vibraphone, xylophone, glockenspiel, tubular bells, timpani, steel drum)
+- Marimba: sine, prominent 4th harmonic (bar transverse mode), inharmonic partials at ~9.4x, percussive, mallet strike noise
+- Vibraphone: like marimba but add tremolo (5-7Hz) for motor-driven vibrato effect, longer sustain
+- Glockenspiel: sine, bright, high octave (5-6), fast decay, very high filter
+- Timpani: sine, low octave (2), strong H1 only, long decay, percussive, mallet/felt noise
+- All: percussive=true, zero sustain, mallet/strike noise transient
+
+### Synth Bass
+- Saw/square, low octave, short attack, moderate decay, low-pass filter, optional FM for grit.
+
+### Synth Lead
+- Saw/square with vibrato, filter envelope sweep, unison for thickness, moderate gain.
+
+### Pads
+- Slow attack and release, layered detuned waves (unison), low-pass filter, high sustain.
 
 ## Gain Budgeting
 

@@ -20,10 +20,10 @@ const INSTRUMENTS = {
   trumpet: {
     name: 'Trumpet',
     harmonics: [
-      { harmonic: 1, gain: 1.0, role: 'Fundamental (H1)' },
-      { harmonic: 2, gain: 0.6, role: '2nd Harmonic (H2)' },
-      { harmonic: 3, gain: 0.4, role: '3rd Harmonic (H3)' },
-      { harmonic: 4, gain: 0.25, role: '4th Harmonic (H4)' },
+      { harmonic: 1, gain: 0.65, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.38, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.22, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.1, role: '4th Harmonic (H4)' },
     ],
     envelope: { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.15 },
     filter: { type: 'lowpass', frequency: 4000, Q: 2 },
@@ -33,7 +33,7 @@ const INSTRUMENTS = {
     vibratoDelay: 0.3,
     noise: {
       noiseFilterFreq: 3000, noiseFilterQ: 2, noiseFilterType: 'bandpass',
-      gain: 0.15, role: 'Attack Bark',
+      gain: 0.1, role: 'Attack Bark',
       attack: 0.001, decay: 0.04, sustain: 0, release: 0.04,
     },
     octave: 4,
@@ -65,18 +65,18 @@ const INSTRUMENTS = {
   clarinet: {
     name: 'Clarinet',
     harmonics: [
-      { harmonic: 1, gain: 1.0, role: 'Fundamental (H1)' },
-      { harmonic: 3, gain: 0.55, role: '3rd Harmonic (H3)' },
-      { harmonic: 5, gain: 0.35, role: '5th Harmonic (H5)' },
-      { harmonic: 7, gain: 0.18, role: '7th Harmonic (H7)' },
-      { harmonic: 9, gain: 0.08, role: '9th Harmonic (H9)' },
+      { harmonic: 1, gain: 0.65, role: 'Fundamental (H1)' },
+      { harmonic: 3, gain: 0.35, role: '3rd Harmonic (H3)' },
+      { harmonic: 5, gain: 0.2, role: '5th Harmonic (H5)' },
+      { harmonic: 7, gain: 0.1, role: '7th Harmonic (H7)' },
+      { harmonic: 9, gain: 0.05, role: '9th Harmonic (H9)' },
     ],
     envelope: { attack: 0.02, decay: 0.1, sustain: 0.7, release: 0.2 },
     filter: { type: 'bandpass', frequency: 2000, Q: 1.5 },
     fm: { ratio: 1, depth: 80, attack: 0.01, decay: 0.2 },
     noise: {
       noiseFilterFreq: 2000, noiseFilterQ: 2, noiseFilterType: 'bandpass',
-      gain: 0.1, role: 'Reed Noise',
+      gain: 0.08, role: 'Reed Noise',
       attack: 0.005, decay: 0.06, sustain: 0, release: 0.06,
     },
     octave: 4,
@@ -106,14 +106,14 @@ const INSTRUMENTS = {
   organ: {
     name: 'Organ',
     harmonics: [
-      { harmonic: 0.5, gain: 0.6, role: 'Sub (16\')' },
-      { harmonic: 1, gain: 1.0, role: 'Fundamental (8\')' },
-      { harmonic: 2, gain: 0.8, role: 'Octave (4\')' },
-      { harmonic: 3, gain: 0.5, role: '12th (2 2/3\')' },
-      { harmonic: 4, gain: 0.4, role: '15th (2\')' },
-      { harmonic: 6, gain: 0.25, role: '19th (1 1/3\')' },
-      { harmonic: 8, gain: 0.15, role: '22nd (1\')' },
-      { harmonic: 12, gain: 0.08, role: '26th (2/3\')' },
+      { harmonic: 0.5, gain: 0.2, role: 'Sub (16\')' },
+      { harmonic: 1, gain: 0.35, role: 'Fundamental (8\')' },
+      { harmonic: 2, gain: 0.28, role: 'Octave (4\')' },
+      { harmonic: 3, gain: 0.18, role: '12th (2 2/3\')' },
+      { harmonic: 4, gain: 0.14, role: '15th (2\')' },
+      { harmonic: 6, gain: 0.08, role: '19th (1 1/3\')' },
+      { harmonic: 8, gain: 0.05, role: '22nd (1\')' },
+      { harmonic: 12, gain: 0.03, role: '26th (2/3\')' },
     ],
     envelope: { attack: 0.001, decay: 0.01, sustain: 1.0, release: 0.05 },
     noise: null,
@@ -125,16 +125,16 @@ const INSTRUMENTS = {
   'electric bass': {
     name: 'Electric Bass',
     harmonics: [
-      { harmonic: 1, gain: 0.9, role: 'Fundamental (H1)', waveShape: 'sawtooth' },
-      { harmonic: 2, gain: 0.4, role: '2nd Harmonic (H2)' },
-      { harmonic: 3, gain: 0.15, role: '3rd Harmonic (H3)' },
+      { harmonic: 1, gain: 0.7, role: 'Fundamental (H1)', waveShape: 'sawtooth' },
+      { harmonic: 2, gain: 0.3, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.12, role: '3rd Harmonic (H3)' },
     ],
     envelope: { attack: 0.005, decay: 0.15, sustain: 0.5, release: 0.2 },
     filter: { type: 'lowpass', frequency: 800, Q: 1 },
     filterEnvelope: { amount: 400, attack: 0.005, decay: 0.1 },
     noise: {
       noiseFilterFreq: 500, noiseFilterQ: 0.8, noiseFilterType: 'lowpass',
-      gain: 0.12, role: 'Finger/String Noise',
+      gain: 0.1, role: 'Finger/String Noise',
       attack: 0.001, decay: 0.04, sustain: 0, release: 0.04,
     },
     octave: 2,
@@ -145,12 +145,12 @@ const INSTRUMENTS = {
   saxophone: {
     name: 'Saxophone',
     harmonics: [
-      { harmonic: 1, gain: 1.0, role: 'Fundamental (H1)' },
-      { harmonic: 2, gain: 0.5, role: '2nd Harmonic (H2)' },
-      { harmonic: 3, gain: 0.4, role: '3rd Harmonic (H3)' },
-      { harmonic: 4, gain: 0.3, role: '4th Harmonic (H4)' },
-      { harmonic: 5, gain: 0.15, role: '5th Harmonic (H5)' },
-      { harmonic: 6, gain: 0.08, role: '6th Harmonic (H6)' },
+      { harmonic: 1, gain: 0.6, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.3, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.22, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.15, role: '4th Harmonic (H4)' },
+      { harmonic: 5, gain: 0.08, role: '5th Harmonic (H5)' },
+      { harmonic: 6, gain: 0.04, role: '6th Harmonic (H6)' },
     ],
     envelope: { attack: 0.03, decay: 0.1, sustain: 0.75, release: 0.2 },
     filter: { type: 'lowpass', frequency: 3500, Q: 1.5 },
@@ -160,7 +160,7 @@ const INSTRUMENTS = {
     vibratoDelay: 0.4,
     noise: {
       noiseFilterFreq: 2500, noiseFilterQ: 1.5, noiseFilterType: 'bandpass',
-      gain: 0.1, role: 'Reed Breath Noise',
+      gain: 0.08, role: 'Reed Breath Noise',
       attack: 0.005, decay: 0.06, sustain: 0, release: 0.06,
     },
     octave: 4,
@@ -171,12 +171,12 @@ const INSTRUMENTS = {
   piano: {
     name: 'Piano',
     harmonics: [
-      { harmonic: 1, gain: 1.0, role: 'Fundamental (H1)', decay: 2.0 },
-      { harmonic: 2.002, gain: 0.5, role: '2nd Inharmonic (H2)', decay: 1.5 },
-      { harmonic: 3.006, gain: 0.3, role: '3rd Inharmonic (H3)', decay: 1.0 },
-      { harmonic: 4.013, gain: 0.15, role: '4th Inharmonic (H4)', decay: 0.7 },
-      { harmonic: 5.022, gain: 0.08, role: '5th Inharmonic (H5)', decay: 0.5 },
-      { harmonic: 6.034, gain: 0.04, role: '6th Inharmonic (H6)', decay: 0.35 },
+      { harmonic: 1, gain: 0.65, role: 'Fundamental (H1)', decay: 2.0 },
+      { harmonic: 2.002, gain: 0.32, role: '2nd Inharmonic (H2)', decay: 1.5 },
+      { harmonic: 3.006, gain: 0.18, role: '3rd Inharmonic (H3)', decay: 1.0 },
+      { harmonic: 4.013, gain: 0.09, role: '4th Inharmonic (H4)', decay: 0.7 },
+      { harmonic: 5.022, gain: 0.05, role: '5th Inharmonic (H5)', decay: 0.5 },
+      { harmonic: 6.034, gain: 0.03, role: '6th Inharmonic (H6)', decay: 0.35 },
     ],
     envelope: { attack: 0.001, decay: 2.0, sustain: 0, release: 0.5 },
     filter: { type: 'lowpass', frequency: 6000, Q: 0.5 },
@@ -184,12 +184,124 @@ const INSTRUMENTS = {
     percussive: true,
     noise: {
       noiseFilterFreq: 8000, noiseFilterQ: 0.3, noiseFilterType: 'bandpass',
-      gain: 0.12, role: 'Hammer Strike',
+      gain: 0.1, role: 'Hammer Strike',
       attack: 0.001, decay: 0.03, sustain: 0, release: 0.02,
     },
     octave: 4,
     waveShape: 'sine',
     description: 'Inharmonic partials (slightly sharp upper harmonics) model the stiffness of real piano strings. 3-voice unison simulates the 3 strings per note with subtle detuning. Percussive envelope decays to silence — no sustain. Higher harmonics decay faster than lower ones, just like a real piano.',
+  },
+
+  'acoustic guitar': {
+    name: 'Acoustic Guitar',
+    harmonics: [
+      { harmonic: 1, gain: 0.8, role: 'Fundamental (H1)', decay: 1.5 },
+      { harmonic: 2, gain: 0.3, role: '2nd Harmonic (H2)', decay: 1.2 },
+      { harmonic: 3, gain: 0.15, role: '3rd Harmonic (H3)', decay: 0.9 },
+      { harmonic: 4, gain: 0.07, role: '4th Harmonic (H4)', decay: 0.6 },
+      { harmonic: 5, gain: 0.03, role: '5th Harmonic (H5)', decay: 0.4 },
+    ],
+    envelope: { attack: 0.002, decay: 0.8, sustain: 0.15, release: 0.3 },
+    filter: { type: 'lowpass', frequency: 3500, Q: 0.6 },
+    filterEnvelope: { amount: 1500, attack: 0.002, decay: 0.3 },
+    percussive: true,
+    noise: {
+      noiseFilterFreq: 4000, noiseFilterQ: 1.0, noiseFilterType: 'bandpass',
+      gain: 0.08, role: 'Pluck Transient',
+      attack: 0.001, decay: 0.02, sustain: 0, release: 0.01,
+    },
+    octave: 3,
+    waveShape: 'triangle',
+    description: 'Triangle wave provides the warm, woody body of a nylon/steel-string guitar. The filter starts open during the pluck attack and closes quickly, mimicking how a real guitar note is bright on attack then mellows. A very short noise burst simulates the pluck transient of the fingertip or pick on the string. Percussive envelope with low sustain models the natural exponential decay of a plucked string.',
+  },
+
+  cello: {
+    name: 'Cello',
+    harmonics: [
+      { harmonic: 1, gain: 0.7, role: 'Fundamental (H1)', waveShape: 'sawtooth' },
+      { harmonic: 2, gain: 0.28, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.18, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.1, role: '4th Harmonic (H4)' },
+      { harmonic: 5, gain: 0.05, role: '5th Harmonic (H5)' },
+      { harmonic: 6, gain: 0.03, role: '6th Harmonic (H6)' },
+    ],
+    envelope: { attack: 0.18, decay: 0.15, sustain: 0.82, release: 0.5 },
+    filter: { type: 'lowpass', frequency: 3500, Q: 0.8 },
+    vibrato: { rate: 5.0, depth: 10 },
+    vibratoDelay: 0.6,
+    noise: {
+      noiseFilterFreq: 2000, noiseFilterQ: 0.8, noiseFilterType: 'bandpass',
+      gain: 0.04, role: 'Bow Friction',
+      attack: 0.08, decay: 0.1, sustain: 0.2, release: 0.2,
+    },
+    octave: 3,
+    waveShape: 'sine',
+    description: 'Sawtooth fundamental produces the rich bowed-string spectrum. The cello has a warm, dark tone due to its large resonant body — the lowpass filter at 3500Hz shapes this. Slower attack than violin (0.18s) reflects the heavier bow-on-string response. Vibrato at 5Hz with 0.6s delay mimics a cellist\'s expressive technique. Subtle bow friction noise adds realism. Octave 3 places it in the correct C2-C5 range.',
+  },
+
+  'electric piano': {
+    name: 'Electric Piano (Rhodes)',
+    harmonics: [
+      { harmonic: 1, gain: 0.7, role: 'Fundamental (H1)', decay: 2.5 },
+      { harmonic: 2.0, gain: 0.2, role: '2nd Harmonic (H2)', decay: 2.0 },
+      { harmonic: 3.02, gain: 0.28, role: '3rd Inharmonic (H3)', decay: 1.5 },
+      { harmonic: 5.04, gain: 0.1, role: '5th Inharmonic (H5)', decay: 1.0 },
+    ],
+    envelope: { attack: 0.001, decay: 1.8, sustain: 0.1, release: 0.4 },
+    filter: { type: 'lowpass', frequency: 4000, Q: 0.4 },
+    fm: { ratio: 1, depth: 60, attack: 0.001, decay: 0.4 },
+    percussive: true,
+    unison: { voices: 2, detune: 2 },
+    noise: {
+      noiseFilterFreq: 6000, noiseFilterQ: 0.5, noiseFilterType: 'bandpass',
+      gain: 0.05, role: 'Tine Strike',
+      attack: 0.001, decay: 0.015, sustain: 0, release: 0.01,
+    },
+    octave: 4,
+    waveShape: 'sine',
+    description: 'The Rhodes tine produces a bell-like tone with inharmonic partials — the 3rd harmonic is unusually prominent (from the tine striking the tone bar). FM synthesis adds the characteristic "bite" that decays quickly. 2-voice subtle unison simulates the stereo chorus of a Rhodes through a amplifier. Percussive envelope with low sustain models the natural decay. A brief tine strike noise transient adds attack realism.',
+  },
+
+  harp: {
+    name: 'Harp',
+    harmonics: [
+      { harmonic: 1, gain: 0.7, role: 'Fundamental (H1)', decay: 3.0 },
+      { harmonic: 2, gain: 0.3, role: '2nd Harmonic (H2)', decay: 2.5 },
+      { harmonic: 3, gain: 0.15, role: '3rd Harmonic (H3)', decay: 2.0 },
+      { harmonic: 4, gain: 0.07, role: '4th Harmonic (H4)', decay: 1.5 },
+      { harmonic: 5, gain: 0.03, role: '5th Harmonic (H5)', decay: 1.0 },
+    ],
+    envelope: { attack: 0.005, decay: 2.5, sustain: 0.05, release: 1.0 },
+    filter: { type: 'lowpass', frequency: 5000, Q: 0.3 },
+    percussive: true,
+    noise: {
+      noiseFilterFreq: 3000, noiseFilterQ: 0.6, noiseFilterType: 'bandpass',
+      gain: 0.05, role: 'Pluck/Fingernail',
+      attack: 0.001, decay: 0.015, sustain: 0, release: 0.01,
+    },
+    octave: 4,
+    waveShape: 'sine',
+    description: 'Pure sine harmonics create the harp\'s crystalline, ethereal quality. Very long decay (3s for fundamental) with near-zero sustain models the free-ringing string. Gentle lowpass filter at 5000Hz with low Q preserves the natural warmth. A very brief pluck transient adds the fingernail/fingertip attack. Long release (1s) simulates the natural ring-off when the player releases the string.',
+  },
+
+  marimba: {
+    name: 'Marimba',
+    harmonics: [
+      { harmonic: 1, gain: 0.9, role: 'Fundamental (H1)', decay: 1.2 },
+      { harmonic: 4, gain: 0.3, role: '4th Harmonic (H4) — octave', decay: 0.6 },
+      { harmonic: 9.4, gain: 0.08, role: 'Inharmonic partial', decay: 0.3 },
+    ],
+    envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 0.3 },
+    filter: { type: 'lowpass', frequency: 5000, Q: 0.5 },
+    percussive: true,
+    noise: {
+      noiseFilterFreq: 7000, noiseFilterQ: 0.8, noiseFilterType: 'bandpass',
+      gain: 0.08, role: 'Mallet Strike',
+      attack: 0.001, decay: 0.01, sustain: 0, release: 0.005,
+    },
+    octave: 4,
+    waveShape: 'sine',
+    description: 'Marimba bars vibrate with a prominent 4th harmonic (two octaves above fundamental) due to the bar\'s transverse vibration modes. Higher inharmonic partials at ~9.4x are characteristic of tuned bar percussion. The mallet strike noise is brief and high-frequency. Percussive envelope with zero sustain models the natural exponential decay of a struck bar. The resonator tube amplifies the fundamental, making it dominant.',
   },
 }
 
@@ -200,7 +312,7 @@ const ALIASES = {
   trupmet: 'trumpet', trompet: 'trumpet', horn: 'trumpet', brass: 'trumpet',
 
   // Flute
-  flut: 'flute', fluite: 'flute', fluet: 'flute', recorder: 'flute',
+  flut: 'flute', fluite: 'flute', fluet: 'flute',
 
   // Clarinet
   clarnet: 'clarinet', clarneet: 'clarinet',
@@ -208,7 +320,11 @@ const ALIASES = {
 
   // Violin
   violen: 'violin', violine: 'violin',
-  fiddle: 'violin', viola: 'violin', cello: 'violin',
+  fiddle: 'violin',
+
+  // Cello
+  violincelo: 'cello', violoncello: 'cello', violoncelo: 'cello',
+  chelo: 'cello',
 
   // Organ
   chursh: 'organ', church: 'organ', pipe: 'organ',
@@ -224,6 +340,22 @@ const ALIASES = {
   // Piano
   pian: 'piano', pianoo: 'piano', keyb: 'piano', keys: 'piano',
   keyboard: 'piano', piani: 'piano',
+
+  // Acoustic Guitar
+  guitar: 'acoustic guitar', 'ac guitar': 'acoustic guitar',
+  'accoustic guitar': 'acoustic guitar', acustic: 'acoustic guitar',
+  gitar: 'acoustic guitar',
+
+  // Electric Piano
+  rhodes: 'electric piano', wurli: 'electric piano', wurlitzer: 'electric piano',
+  'elec piano': 'electric piano', 'e piano': 'electric piano',
+  epiano: 'electric piano', 'ep': 'electric piano',
+
+  // Harp
+  harps: 'harp',
+
+  // Marimba
+  marimba: 'marimba', marimbe: 'marimba',
 }
 
 // ─── Fuzzy Matching ──────────────────────────────────────────────────────────

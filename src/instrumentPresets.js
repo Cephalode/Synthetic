@@ -63,25 +63,55 @@ export const INSTRUMENTS = {
     description: 'The trombone\'s cylindrical bore produces a broader, warmer spectrum than the trumpet. The filter sits lower (3000Hz) reflecting the darker timbre. Slightly slower attack (0.025s) models the larger lip aperture needed. FM buzz is slightly less intense than trumpet. Octave 3 places it in the correct tenor/alto range. The "blat" noise transient is slightly longer and lower-pitched than the trumpet\'s bark, matching the larger mouthpiece.',
   },
 
+  'french horn': {
+    name: 'French Horn',
+    harmonics: [
+      { harmonic: 1, gain: 0.60, role: 'Fundamental (H1)' },
+      { harmonic: 2, gain: 0.28, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.16, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.07, role: '4th Harmonic (H4)' },
+      { harmonic: 5, gain: 0.04, role: '5th Harmonic (H5)' },
+      { harmonic: 6, gain: 0.02, role: '6th Harmonic (H6)' },
+    ],
+    envelope: { attack: 0.03, decay: 0.12, sustain: 0.72, release: 0.35 },
+    filter: { type: 'lowpass', frequency: 2000, Q: 1.0 },
+    filterEnvelope: { amount: 1500, attack: 0.015, decay: 0.15 },
+    fm: { ratio: 1, depth: 80, attack: 0.01, decay: 0.25 },
+    vibrato: { rate: 4.5, depth: 7 },
+    vibratoDelay: 0.5,
+    noise: {
+      noiseFilterFreq: 1800, noiseFilterQ: 1.0, noiseFilterType: 'bandpass',
+      gain: 0.06, role: 'Attack Blurp',
+      attack: 0.002, decay: 0.04, sustain: 0, release: 0.04,
+    },
+    octave: 3,
+    waveShape: 'sine',
+    description: 'The French horn\'s hand-in-bell technique creates the darkest, warmest timbre of the brass family. The low filter cutoff (2000Hz) models how the hand dampens higher harmonics. FM depth is lower than trumpet/trombone (80 vs 120-150) reflecting the mellower character. Wider vibrato (7 cents) with 0.5s delay matches typical horn technique. The "blurp" noise transient is softer and lower-pitched than other brass, muffled by the hand. Octave 3 covers the standard horn range (B1-D5).',
+  },
+
   // ─── Strings (bowed) ──────────────────────────────────────────────────────
 
   violin: {
     name: 'Violin',
     harmonics: [
-      { harmonic: 1, gain: 0.8, role: 'Fundamental (H1)', waveShape: 'sawtooth' },
-      { harmonic: 2, gain: 0.3, role: '2nd Harmonic (H2)' },
-      { harmonic: 3, gain: 0.2, role: '3rd Harmonic (H3)' },
-      { harmonic: 4, gain: 0.1, role: '4th Harmonic (H4)' },
-      { harmonic: 5, gain: 0.06, role: '5th Harmonic (H5)' },
+      { harmonic: 1, gain: 0.75, role: 'Fundamental (H1)', waveShape: 'sawtooth' },
+      { harmonic: 2, gain: 0.28, role: '2nd Harmonic (H2)' },
+      { harmonic: 3, gain: 0.18, role: '3rd Harmonic (H3)' },
+      { harmonic: 4, gain: 0.09, role: '4th Harmonic (H4)' },
+      { harmonic: 5, gain: 0.05, role: '5th Harmonic (H5)' },
     ],
     envelope: { attack: 0.12, decay: 0.1, sustain: 0.85, release: 0.4 },
-    filter: { type: 'lowpass', frequency: 5000, Q: 0.7 },
+    filter: { type: 'lowpass', frequency: 4500, Q: 1.2 },
     vibrato: { rate: 5.5, depth: 12 },
     vibratoDelay: 0.5,
-    noise: null,
+    noise: {
+      noiseFilterFreq: 2500, noiseFilterQ: 0.8, noiseFilterType: 'bandpass',
+      gain: 0.03, role: 'Bow Friction',
+      attack: 0.06, decay: 0.08, sustain: 0.15, release: 0.15,
+    },
     octave: 4,
     waveShape: 'sine',
-    description: 'A sawtooth fundamental provides the rich, bowed-string spectrum. Sine harmonic reinforcements shape the upper partials. Wide vibrato (12 cents) with a 0.5s delay mimics an expressive player. The slow 0.12s attack simulates the bow grabbing the string.',
+    description: 'A sawtooth fundamental provides the rich, bowed-string spectrum. Sine harmonic reinforcements shape the upper partials. The filter at 4500Hz with Q=1.2 creates a subtle resonance peak suggesting body cavity formants around 1000-1500Hz. Wide vibrato (12 cents) with a 0.5s delay mimics an expressive player. The slow 0.12s attack simulates the bow grabbing the string. Subtle bow friction noise adds realism to the sustained tone.',
   },
 
   cello: {
@@ -95,7 +125,7 @@ export const INSTRUMENTS = {
       { harmonic: 6, gain: 0.03, role: '6th Harmonic (H6)' },
     ],
     envelope: { attack: 0.18, decay: 0.15, sustain: 0.82, release: 0.5 },
-    filter: { type: 'lowpass', frequency: 3500, Q: 0.8 },
+    filter: { type: 'lowpass', frequency: 3000, Q: 1.2 },
     vibrato: { rate: 5.0, depth: 10 },
     vibratoDelay: 0.6,
     noise: {
@@ -105,7 +135,7 @@ export const INSTRUMENTS = {
     },
     octave: 3,
     waveShape: 'sine',
-    description: 'Sawtooth fundamental produces the rich bowed-string spectrum. The cello has a warm, dark tone due to its large resonant body — the lowpass filter at 3500Hz shapes this. Slower attack than violin (0.18s) reflects the heavier bow-on-string response. Vibrato at 5Hz with 0.6s delay mimics a cellist\'s expressive technique. Subtle bow friction noise adds realism. Octave 3 places it in the correct C2-C5 range.',
+    description: 'Sawtooth fundamental produces the rich bowed-string spectrum. The cello has a warm, dark tone due to its large resonant body — the lowpass filter at 3000Hz with Q=1.2 creates a subtle resonance peak suggesting body cavity formants. Slower attack than violin (0.18s) reflects the heavier bow-on-string response. Vibrato at 5Hz with 0.6s delay mimics a cellist\'s expressive technique. Subtle bow friction noise adds realism. Octave 3 places it in the correct C2-C5 range.',
   },
 
   // ─── Strings (plucked) ────────────────────────────────────────────────────
@@ -346,6 +376,32 @@ export const INSTRUMENTS = {
     description: 'Pure sine waves in classic drawbar registration — the purest form of additive synthesis. Nearly instant attack, full sustain while held, quick release. Tremolo at 6.8Hz simulates the Leslie speaker\'s rotating horn effect. No filter, no vibrato — just pure organ tone with rotary modulation.',
   },
 
+  harpsichord: {
+    name: 'Harpsichord',
+    harmonics: [
+      { harmonic: 1, gain: 0.48, role: 'Fundamental (H1)', decay: 2.0 },
+      { harmonic: 2, gain: 0.30, role: '2nd Harmonic (H2)', decay: 1.6 },
+      { harmonic: 3, gain: 0.22, role: '3rd Harmonic (H3)', decay: 1.2 },
+      { harmonic: 4, gain: 0.13, role: '4th Harmonic (H4)', decay: 0.8 },
+      { harmonic: 5, gain: 0.08, role: '5th Harmonic (H5)', decay: 0.5 },
+      { harmonic: 6, gain: 0.05, role: '6th Harmonic (H6)', decay: 0.35 },
+      { harmonic: 8, gain: 0.03, role: '8th Harmonic (H8)', decay: 0.2 },
+    ],
+    envelope: { attack: 0.001, decay: 1.5, sustain: 0.05, release: 0.3 },
+    filter: { type: 'lowpass', frequency: 7000, Q: 0.6 },
+    filterEnvelope: { amount: 3000, attack: 0.001, decay: 0.2 },
+    percussive: true,
+    unison: { voices: 2, detune: 2 },
+    noise: {
+      noiseFilterFreq: 7000, noiseFilterQ: 0.8, noiseFilterType: 'bandpass',
+      gain: 0.08, role: 'Plectrum Pluck',
+      attack: 0.001, decay: 0.01, sustain: 0, release: 0.005,
+    },
+    octave: 4,
+    waveShape: 'square',
+    description: 'The harpsichord plucks strings with a plectrum (crow quill or delrin), producing a bright, twangy tone with rich upper harmonics. Square wave models the sharp pluck transient and bright timbre. 2-voice unison with 2-cent detuning simulates the two strings per note typical of harpsichords. Very high filter cutoff (7000Hz) preserves the bright, metallic character. Per-harmonic decay (higher harmonics faster) models the string\'s natural decay. Near-zero sustain with percussive envelope — the harpsichord cannot sustain notes like a piano. Brief plectrum noise adds attack realism. Octave 4 covers the standard harpsichord range.',
+  },
+
   // ─── Percussion (pitched) ────────────────────────────────────────────────
 
   marimba: {
@@ -353,7 +409,8 @@ export const INSTRUMENTS = {
     harmonics: [
       { harmonic: 1, gain: 0.9, role: 'Fundamental (H1)', decay: 1.2 },
       { harmonic: 4, gain: 0.3, role: '4th Harmonic (H4) — octave', decay: 0.6 },
-      { harmonic: 9.4, gain: 0.08, role: 'Inharmonic partial', decay: 0.3 },
+      { harmonic: 9.4, gain: 0.08, role: 'Inharmonic partial (9.4x)', decay: 0.3 },
+      { harmonic: 10.2, gain: 0.04, role: 'Inharmonic partial (10.2x)', decay: 0.2 },
     ],
     envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 0.3 },
     filter: { type: 'lowpass', frequency: 5000, Q: 0.5 },
@@ -387,6 +444,26 @@ export const INSTRUMENTS = {
     octave: 4,
     waveShape: 'sine',
     description: 'The vibraphone shares the marimba\'s bar vibration physics (prominent 4th harmonic, inharmonic at ~9.4x) but with a longer sustain and slower decay from the metal bars. The key feature is tremolo at 5.5Hz with 25% depth, simulating the motor-driven rotating resonator discs that create the classic "shimmer." Longer release (0.8s) allows the metal bars to ring naturally. The mallet noise is slightly softer and shorter than marimba, reflecting the use of yarn-wound mallets on metal.',
+  },
+
+  glockenspiel: {
+    name: 'Glockenspiel',
+    harmonics: [
+      { harmonic: 1, gain: 0.75, role: 'Fundamental (H1)', decay: 1.2 },
+      { harmonic: 2.76, gain: 0.22, role: 'Inharmonic (2.76x) — 1st overtone', decay: 0.6 },
+      { harmonic: 5.4, gain: 0.10, role: 'Inharmonic (5.4x) — 2nd overtone', decay: 0.3 },
+    ],
+    envelope: { attack: 0.001, decay: 0.8, sustain: 0, release: 0.5 },
+    filter: { type: 'lowpass', frequency: 9000, Q: 0.4 },
+    percussive: true,
+    noise: {
+      noiseFilterFreq: 9000, noiseFilterQ: 0.5, noiseFilterType: 'bandpass',
+      gain: 0.04, role: 'Mallet Strike',
+      attack: 0.001, decay: 0.005, sustain: 0, release: 0.003,
+    },
+    octave: 5,
+    waveShape: 'sine',
+    description: 'The glockenspiel produces pure, bright, bell-like tones from struck metal bars. Sine wave is essential for the crystalline quality. Inharmonic overtones at 2.76x and 5.4x are transverse vibration modes of free-free metal bars — these non-integer ratios give the distinctive bell-like character (same physics as xylophone/marimba bars but metal). High octave (5) places it in the correct range (G5-C8). Very high filter (9000Hz) preserves brightness. Minimal mallet noise — hard mallet on metal creates almost no transient. Fast percussive decay with zero sustain.',
   },
 
   // ─── Electric Bass ───────────────────────────────────────────────────────
@@ -525,10 +602,14 @@ export const INSTRUMENTS = {
 export const ALIASES = {
   // Trumpet
   trumet: 'trumpet', trumpt: 'trumpet', trum: 'trumpet', trup: 'trumpet',
-  trupmet: 'trumpet', trompet: 'trumpet', horn: 'trumpet', brass: 'trumpet',
+  trupmet: 'trumpet', trompet: 'trumpet', brass: 'trumpet',
 
   // Trombone
   trombon: 'trombone', trom: 'trombone', bone: 'trombone',
+
+  // French Horn
+  horn: 'french horn', 'frenchhorn': 'french horn', 'fr horn': 'french horn',
+  frhorn: 'french horn', 'f horn': 'french horn', cor: 'french horn',
 
   // Flute
   flut: 'flute', fluite: 'flute', fluet: 'flute',
@@ -605,4 +686,12 @@ export const ALIASES = {
   // Synth Pad
   pad: 'synth pad', 'synthpad': 'synth pad',
   'string pad': 'synth pad', 'analog pad': 'synth pad',
+
+  // Harpsichord
+  harpsicord: 'harpsichord', harpschor: 'harpsichord',
+  cembalo: 'harpsichord', cemb: 'harpsichord',
+
+  // Glockenspiel
+  glock: 'glockenspiel', glockenspeil: 'glockenspiel',
+  bells: 'glockenspiel', 'orchestral bells': 'glockenspiel',
 }

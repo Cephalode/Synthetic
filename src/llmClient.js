@@ -70,25 +70,27 @@ Each layer object may contain the following fields:
 ## Acoustic Synthesis Guidance
 
 ### Brass (trumpet, trombone, french horn, tuba)
-- Wave: sine fundamental with FM for buzz. Trumpet/cornet are brighter; trombone/tuba are warmer and darker
+- Wave: sine fundamental with FM for buzz. Trumpet/cornet are brighter; trombone/french horn are warmer and darker
 - Trumpet harmonics: strong H1-H4 (0.65, 0.38, 0.22, 0.10), filter at 4000Hz, FM depth 150
 - Trombone harmonics: strong H1-H5 (0.6, 0.4, 0.25, 0.12, 0.06), broader spectrum, filter at 3000Hz (darker), FM depth 120, octave 3, slower attack (0.025s), wider vibrato delay (0.4s)
-- Attack: 0.01-0.03s (fast but not instantaneous — lips need time to buzz). Trombone slightly slower than trumpet
+- French Horn harmonics: H1-H6 (0.60, 0.28, 0.16, 0.07, 0.04, 0.02), DARKEST brass — hand-in-bell dampens high harmonics. Filter at 2000Hz, FM depth 80 (mellow), vibrato 7 cents with 0.5s delay, octave 3, softer attack blurp noise at 1800Hz
+- Attack: 0.01-0.03s (fast but not instantaneous — lips need time to buzz). Trombone/french horn slightly slower than trumpet
 - Sustain: 0.7-0.75 (brass sustains well while blowing)
-- Filter: lowpass sweep from high cutoff down (bright attack → warm sustain). Filter envelope amount 2000-3000Hz. Trumpet cutoff ~4000Hz, trombone ~3000Hz, tuba ~2000Hz
-- FM: adds brass "buzz" — use ratio 1, depth 80-200, fast attack, medium decay (buzz fades after initial hit). Trumpet=150, trombone=120, french horn=80
-- Vibrato: 4.5-5.5 Hz, depth 5-8 cents, delay 0.3-0.5s (vibrato is a late expressive technique)
-- Noise: short bandpass-filtered burst (2-4kHz) for attack "bark" or "tonguing". Trombone has slightly lower, longer blat (2.5kHz)
+- Filter: lowpass sweep from high cutoff down (bright attack → warm sustain). Filter envelope amount 1500-3000Hz. Trumpet cutoff ~4000Hz, trombone ~3000Hz, french horn ~2000Hz, tuba ~1500Hz
+- FM: adds brass "buzz" — use ratio 1, depth 60-200, fast attack, medium decay (buzz fades after initial hit). Trumpet=150, trombone=120, french horn=80
+- Vibrato: 4.5-5.5 Hz, depth 5-8 cents, delay 0.3-0.5s (vibrato is a late expressive technique). French horn wider (7 cents)
+- Noise: short bandpass-filtered burst for attack "bark" or "tonguing". French horn is softer and lower (1800Hz) due to hand-in-bell muffling
 - Octave: trumpet/cornet=4, trombone=3, french horn=3, tuba=2
 
 ### Strings — bowed (violin, viola, cello, double bass)
 - Wave: sawtooth fundamental (models bow friction spectrum), sine reinforcement for upper partials
-- Harmonics: H1 dominant, H2-H6 decreasing gradually (rich harmonic content from bow)
-- Attack: 0.08-0.2s (bow needs time to grab the string — heavier strings = slower attack)
+- Violin harmonics: H1-H5 (0.75, 0.28, 0.18, 0.09, 0.05), sawtooth H1, filter at 4500Hz/Q=1.2 for body resonance emphasis
+- Cello harmonics: H1-H6 (0.7, 0.28, 0.18, 0.1, 0.05, 0.03), sawtooth H1, filter at 3000Hz/Q=1.2 for body resonance, octave 3
+- Attack: 0.08-0.2s (bow needs time to grab the string — heavier strings = slower attack). Cello 0.18s vs violin 0.12s
 - Sustain: 0.8-0.9 (sustained tone while bowing)
 - Vibrato: 4.5-6 Hz, depth 8-15 cents, delay 0.3-0.6s
-- Filter: lowpass 3000-5000Hz with low Q (body resonance)
-- Noise: subtle bandpass bow friction noise (1.5-3kHz) with slow attack matching bow engagement
+- Filter: lowpass 3000-4500Hz with moderate Q (1.0-1.2) to create subtle resonance peak suggesting body cavity formants around 1000-1500Hz. Higher Q than typical (0.7-0.8) to emphasize body resonance
+- Noise: subtle bandpass bow friction noise (2-2.5kHz) with slow attack (0.06-0.08s) matching bow engagement, sustain ~0.15-0.2
 - Octave: violin=4, viola=3-4, cello=3, double bass=2
 - Key difference from plucked strings: bowed strings sustain while held; plucked strings decay
 
@@ -129,14 +131,14 @@ Each layer object may contain the following fields:
 - Piano: sine waves with INHARMONIC partials (multiply by 1.002^n for stiffness), 3-voice unison, percussive, fast attack, long decay, zero sustain, hammer strike noise
 - Rhodes: sine with inharmonics, prominent 3rd partial, FM for "bite" (depth 40-80), 2-voice subtle unison, percussive, tine strike noise
 - Organ: pure sine additive (drawbar registration — sub 0.5x through 8th harmonic 8x), instant attack/release, sustain=1.0, tremolo at 6.8Hz with 0.2 depth for Leslie speaker simulation
-- Harpsichord: sawtooth/square, fast pluck, very bright (high filter cutoff), percussive, pluck noise
+- Harpsichord: square wave (bright, sharp pluck), H1-H8 (0.48, 0.30, 0.22, 0.13, 0.08, 0.05, skip 7, 0.03), filter at 7000Hz (very bright), filter envelope 3000Hz, 2-voice unison at 2 cents (2 strings per note), percussive, near-zero sustain (0.05), plectrum pluck noise at 7000Hz gain 0.08, per-harmonic decay (higher faster)
 - Octave: piano=4, Rhodes=4, organ=3-4, harpsichord=4
 
 ### Pitched Percussion
-- Marimba: sine, prominent 4th harmonic (bar transverse mode, gain 0.3), inharmonic partials at ~9.4x, percussive, mallet strike noise at 7kHz. Zero sustain, fast attack, decay 1.2s for H1. Octave 4
+- Marimba: sine, prominent 4th harmonic (bar transverse mode, gain 0.3), inharmonic partials at ~9.4x (gain 0.08) and ~10.2x (gain 0.04), percussive, mallet strike noise at 7kHz. Zero sustain, fast attack, decay 1.2s for H1. Octave 4
 - Vibraphone: like marimba but metal bars — longer decay (2.5s H1), tremolo 5.5Hz/0.25 depth (motor-driven rotating resonator discs), softer mallet noise, sustain 0.1, release 0.8s. Octave 4
+- Glockenspiel: sine, high octave (5), inharmonic overtones at 2.76x (gain 0.22) and 5.4x (gain 0.10) — free-free bar transverse modes. Filter at 9000Hz (very bright). Decay 1.2s H1. Very minimal mallet noise (gain 0.04). Percussive, zero sustain. These non-integer ratios give the distinctive bell/metallic character
 - Timpani: sine fundamental with inharmonic membrane modes at 1.5x and 2.0x — these non-integer partials distinguish it from string instruments. Lowpass 1200Hz (deep, focused). Very long decay (3s H1), zero sustain, percussive. Felt mallet noise (lowpass 1500Hz, gain 0.12). Octave 2 (bass range D2-A3). The 1.5x partial is the signature of membrane vibration
-- Glockenspiel: sine, bright, high octave (5-6), fast decay, very high filter
 - All: percussive=true, zero sustain, mallet/strike noise transient
 
 ### Electronic / Synth

@@ -6,6 +6,7 @@ import SpectrumDisplay from './SpectrumDisplay';
 import SynthControls from './SynthControls';
 import SimilarityScore from './SimilarityScore';
 import TestSamples from './TestSamples';
+import BenchmarkRunner from './BenchmarkRunner';
 import type { SynthMode } from '../../types';
 
 export default function FourierPanel() {
@@ -70,6 +71,9 @@ export default function FourierPanel() {
 
       {/* Similarity */}
       <SimilarityScore result={similarity} />
+
+      {/* Accuracy Benchmark */}
+      <BenchmarkRunner />
 
       {/* Analysis Details */}
       {analysis && (

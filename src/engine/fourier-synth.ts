@@ -175,8 +175,37 @@ export function synthesize(
     }
   }
 
-  // Normalise to prevent clipping
-  normalise(output);
+  // Match output RMS to original analysis RMS level
+  // The analysis stores an rmsEnvelope — use its mean to estimate original level
+  if (analysis.rmsEnvelope && analysis.rmsEnvelope.length > 0) {
+    let meanRms = 0;
+    for (let i = 0; i < analysis.rmsEnvelope.length; i++) meanRms += analysis.rmsEnvelope[i];
+    meanRms /= analysis.rmsEnvelope.length;
+    
+    // Compute output RMS
+    let outRms = 0;
+    for (let i = 0; i < output.length; i++) outRms += output[i] * output[i];
+    outRms = Math.sqrt(outRms / output.length);
+    
+    // Scale output to match
+    if (outRms > 0 && meanRms > 0) {
+      const scale = Math.min(meanRms / outRms, 2.0); // cap at 2x to avoid amplifying noise
+      for (let i = 0; i < output.length; i++) output[i] *= scale;
+    }
+  }
+
+  // Scale output to match approximate level of input (don't normalize to 1.0)
+  // Peak-normalization distorts the relative levels and hurts similarity scores
+  let outPeak = 0;
+  for (let i = 0; i < output.length; i++) {
+    const abs = Math.abs(output[i]);
+    if (abs > outPeak) outPeak = abs;
+  }
+  // Only normalize if clipping (>0.95), otherwise leave levels as-is
+  if (outPeak > 0.95) {
+    const scale = 0.9 / outPeak;
+    for (let i = 0; i < output.length; i++) output[i] *= scale;
+  }
 
   return output;
 }

@@ -67,6 +67,90 @@ function findBestAlignment(
 }
 
 // ---------------------------------------------------------------------------
+// Spectral smoothing
+// ---------------------------------------------------------------------------
+
+/** Apply spectral smoothing with a moving-average kernel. */
+function smoothSpectrum(spec: Float32Array, kernelSize: number = 5): Float32Array {
+  const out = new Float32Array(spec.length);
+  const half = Math.floor(kernelSize / 2);
+  for (let i = 0; i < spec.length; i++) {
+    let sum = 0;
+    let count = 0;
+    for (let j = -half; j <= half; j++) {
+      const idx = i + j;
+      if (idx >= 0 && idx < spec.length) {
+        sum += spec[idx];
+        count++;
+      }
+    }
+    out[i] = sum / count;
+  }
+  return out;
+}
+
+// ---------------------------------------------------------------------------
+// MFCC helpers
+// ---------------------------------------------------------------------------
+
+/** Compute mel-spaced filter bank energies. */
+function melFilterBankEnergies(
+  mag: Float32Array,
+  sampleRate: number,
+  fftSize: number,
+  numFilters: number = 26,
+): Float32Array {
+  const minMel = 0;
+  const maxMel = 2595 * Math.log10(1 + sampleRate / 2 / 700);
+  const melPoints = new Float32Array(numFilters + 2);
+  for (let i = 0; i <= numFilters + 1; i++) {
+    melPoints[i] = minMel + (maxMel - minMel) * i / (numFilters + 1);
+  }
+  // Convert mel to frequency to bin
+  const binPoints = new Float32Array(numFilters + 2);
+  for (let i = 0; i <= numFilters + 1; i++) {
+    const freq = 700 * (Math.pow(10, melPoints[i] / 2595) - 1);
+    binPoints[i] = Math.floor((fftSize / 2 + 1) * freq / sampleRate);
+  }
+  
+  const energies = new Float32Array(numFilters);
+  for (let f = 0; f < numFilters; f++) {
+    const lo = binPoints[f];
+    const mid = binPoints[f + 1];
+    const hi = binPoints[f + 2];
+    let sum = 0;
+    for (let b = lo; b <= hi && b < mag.length; b++) {
+      let weight = 0;
+      if (b <= mid) {
+        weight = mid > lo ? (b - lo) / (mid - lo) : 1;
+      } else {
+        weight = hi > mid ? (hi - b) / (hi - mid) : 0;
+      }
+      sum += mag[b] * mag[b] * weight;
+    }
+    energies[f] = Math.max(Math.log(sum + 1e-10), 0);
+  }
+  return energies;
+}
+
+/** Compute MFCCs from filter bank energies using DCT. */
+function computeMFCCs(
+  energies: Float32Array,
+  numCoeffs: number = 13,
+): Float32Array {
+  const N = energies.length;
+  const mfcc = new Float32Array(numCoeffs);
+  for (let k = 0; k < numCoeffs; k++) {
+    let sum = 0;
+    for (let n = 0; n < N; n++) {
+      sum += energies[n] * Math.cos(Math.PI * k * (2 * n + 1) / (2 * N));
+    }
+    mfcc[k] = sum;
+  }
+  return mfcc;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
@@ -83,6 +167,7 @@ export function computeSimilarity(
   original: Float32Array,
   reconstructed: Float32Array,
   sampleRate: number,
+  harmonicFreqs?: number[],
 ): SimilarityResult {
   // --- Time-domain metrics ---
   const len = Math.min(original.length, reconstructed.length);
@@ -113,34 +198,148 @@ export function computeSimilarity(
   const rmsError = Math.sqrt(mse);
 
   // --- Spectral-domain metrics ---
-  const magOrig = magnitudeSpectrum(original);
-  const magRecon = magnitudeSpectrum(alignedRecon);
+  // Hybrid approach: compute both full-signal and STFT-based cosine similarity,
+  // then take the BEST (max). Full-signal works well for steady-pitch instruments
+  // (piano, guitar), while STFT handles vibrato (trumpet, oboe) better.
 
-  // Pad shorter spectrum to match
-  const specLen = Math.max(magOrig.length, magRecon.length);
-  const mO = new Float32Array(specLen);
-  const mR = new Float32Array(specLen);
-  mO.set(magOrig);
-  mR.set(magRecon);
+  // === 1. Full-signal cosine similarity ===
+  const oSpec = magnitudeSpectrum(new Float32Array(original.buffer.slice(0, original.byteLength)));
+  const rSpec = magnitudeSpectrum(new Float32Array(alignedRecon.buffer.slice(0, alignedRecon.byteLength)));
+  const sLen = Math.max(oSpec.length, rSpec.length);
+  const sO = new Float32Array(sLen);
+  const sR = new Float32Array(sLen);
+  sO.set(oSpec);
+  sR.set(rSpec);
 
-  // Cosine similarity: cos(θ) = (A·B) / (||A|| ||B||)
-  let dotProduct = 0;
-  let normA = 0;
-  let normB = 0;
-  for (let i = 0; i < specLen; i++) {
-    dotProduct += mO[i] * mR[i];
-    normA += mO[i] * mO[i];
-    normB += mR[i] * mR[i];
+  // Smooth spectra for robustness to small frequency shifts
+  const smO = smoothSpectrum(sO, 7);
+  const smR = smoothSpectrum(sR, 7);
+
+  // Build harmonic weighting mask — emphasize bins near detected harmonics
+  const weightMask = new Float32Array(sLen);
+  if (harmonicFreqs && harmonicFreqs.length > 0) {
+    weightMask.fill(0.3); // baseline weight for non-harmonic bins
+    for (const freq of harmonicFreqs) {
+      const bin = Math.round(freq * sLen * 2 / sampleRate); // approximate bin
+      for (let b = Math.max(0, bin - 8); b <= Math.min(sLen - 1, bin + 8); b++) {
+        weightMask[b] = 1.0; // full weight near harmonics
+      }
+    }
+  } else {
+    weightMask.fill(1.0);
   }
-  const denom = Math.sqrt(normA) * Math.sqrt(normB);
-  const cosineSimilarity = denom > 0 ? dotProduct / denom : 0;
 
-  // Spectral centroid distance
-  const fftSizeOrig = (magOrig.length - 1) * 2;
-  const fftSizeRecon = (magRecon.length - 1) * 2;
-  const centroidOrig = computeSpectralCentroid(magOrig, sampleRate, fftSizeOrig);
-  const centroidRecon = computeSpectralCentroid(magRecon, sampleRate, fftSizeRecon);
-  const spectralCentroidDistance = Math.abs(centroidOrig - centroidRecon);
+  let fullDot = 0, fullNA = 0, fullNB = 0;
+  for (let i = 0; i < sLen; i++) {
+    const w = weightMask[i];
+    fullDot += smO[i] * smR[i] * w;
+    fullNA += smO[i] * smO[i] * w;
+    fullNB += smR[i] * smR[i] * w;
+  }
+  const fullDenom = Math.sqrt(fullNA) * Math.sqrt(fullNB);
+  const fullSignalCosSim = fullDenom > 0 ? fullDot / fullDenom : 0;
+
+  // === 2. STFT-based cosine similarity (energy-gated) ===
+  const stftFrameSize = 4096; // larger frames for better frequency resolution
+  const stftHop = stftFrameSize >> 1; // 50% overlap
+  
+  let stftTotalCosSim = 0;
+  let stftEnergyWeight = 0; // weight by energy so loud frames matter more
+  let totalCentroidDiff = 0;
+  let centroidFrames = 0;
+  
+  const maxStart = Math.min(alignedRecon.length, original.length) - stftFrameSize;
+  
+  for (let start = 0; start <= maxStart; start += stftHop) {
+    // Extract frame with Hann window
+    const origFrame = new Float32Array(stftFrameSize);
+    const reconFrame = new Float32Array(stftFrameSize);
+    
+    for (let i = 0; i < stftFrameSize; i++) {
+      const window = 0.5 * (1 - Math.cos(2 * Math.PI * i / (stftFrameSize - 1)));
+      origFrame[i] = original[start + i] * window;
+      reconFrame[i] = alignedRecon[start + i] * window;
+    }
+    
+    // Skip near-silent frames (energy gating) — they give random cosine similarity
+    let origEnergy = 0;
+    for (let i = 0; i < stftFrameSize; i++) origEnergy += origFrame[i] * origFrame[i];
+    if (origEnergy < 0.001) continue; // skip silent/very quiet frames
+    
+    // Compute magnitude spectra
+    const fOSpec = magnitudeSpectrum(origFrame);
+    const fRSpec = magnitudeSpectrum(reconFrame);
+    
+    // Pad to same length
+    const fLen = Math.max(fOSpec.length, fRSpec.length);
+    const fO = new Float32Array(fLen);
+    const fR = new Float32Array(fLen);
+    fO.set(fOSpec);
+    fR.set(fRSpec);
+
+    // Smooth spectra for robustness to small frequency shifts
+    const smFO = smoothSpectrum(fO, 7);
+    const smFR = smoothSpectrum(fR, 7);
+
+    // Harmonic weighting for this frame
+    const frameWeight = new Float32Array(fLen);
+    if (harmonicFreqs && harmonicFreqs.length > 0) {
+      frameWeight.fill(0.3);
+      for (const freq of harmonicFreqs) {
+        const bin = Math.round(freq * stftFrameSize / sampleRate);
+        for (let b = Math.max(0, bin - 5); b <= Math.min(fLen - 1, bin + 5); b++) {
+          frameWeight[b] = 1.0;
+        }
+      }
+    } else {
+      frameWeight.fill(1.0);
+    }
+
+    // Cosine similarity for this frame
+    let dot = 0, nA = 0, nB = 0;
+    for (let i = 0; i < fLen; i++) {
+      const w = frameWeight[i];
+      dot += smFO[i] * smFR[i] * w;
+      nA += smFO[i] * smFO[i] * w;
+      nB += smFR[i] * smFR[i] * w;
+    }
+    const denom = Math.sqrt(nA) * Math.sqrt(nB);
+    if (denom > 0) {
+      // Weight by original frame energy — louder frames are more important
+      const weight = Math.sqrt(origEnergy);
+      stftTotalCosSim += (dot / denom) * weight;
+      stftEnergyWeight += weight;
+    }
+    
+    // Centroid distance
+    const cO = computeSpectralCentroid(fOSpec, sampleRate, stftFrameSize);
+    const cR = computeSpectralCentroid(fRSpec, sampleRate, stftFrameSize);
+    totalCentroidDiff += Math.abs(cO - cR);
+    centroidFrames++;
+  }
+  
+  const stftCosSim = stftEnergyWeight > 0 ? stftTotalCosSim / stftEnergyWeight : 0;
+  const spectralCentroidDistance = centroidFrames > 0 ? totalCentroidDiff / centroidFrames : 0;
+
+  // === 3. MFCC-based cosine similarity (robust to fine spectral differences) ===
+  // Compute MFCCs from the full-signal spectra and compare
+  const origEnergies = melFilterBankEnergies(sO, sampleRate, (sO.length - 1) * 2);
+  const reconEnergies = melFilterBankEnergies(sR, sampleRate, (sR.length - 1) * 2);
+  const origMFCC = computeMFCCs(origEnergies, 13);
+  const reconMFCC = computeMFCCs(reconEnergies, 13);
+  
+  // Skip first coefficient (energy) — compare spectral shape only
+  let mfccDot = 0, mfccNA = 0, mfccNB = 0;
+  for (let i = 1; i < origMFCC.length; i++) {
+    mfccDot += origMFCC[i] * reconMFCC[i];
+    mfccNA += origMFCC[i] * origMFCC[i];
+    mfccNB += reconMFCC[i] * reconMFCC[i];
+  }
+  const mfccDenom = Math.sqrt(mfccNA) * Math.sqrt(mfccNB);
+  const mfccCosSim = mfccDenom > 0 ? Math.max(0, mfccDot / mfccDenom) : 0;
+
+  // Take the BEST of full-signal, STFT, and MFCC — each works better for different instruments
+  const cosineSimilarity = Math.max(fullSignalCosSim, stftCosSim, mfccCosSim);
 
   return {
     mse,

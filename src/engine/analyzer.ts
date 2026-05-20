@@ -140,13 +140,11 @@ function extractSTFT(
 function detectFundamentalHPS(
   magHalf: Float32Array,
   sampleRate: number,
-  N: number,
-  minFreq: number = 20,
-  maxFreq: number = 5000,
+  fftSize: number,
   numHarmonics: number = 5,
 ): number {
-  const minBin = Math.max(1, Math.floor(minFreq * N / sampleRate));
-  const maxBin = Math.min(magHalf.length - 1, Math.floor(maxFreq * N / sampleRate));
+  const minBin = Math.max(2, Math.floor(20 * fftSize / sampleRate));
+  const maxBin = Math.min(magHalf.length - 1, Math.floor(5000 * fftSize / sampleRate));
 
   let bestBin = minBin;
   let bestScore = -Infinity;
@@ -163,6 +161,27 @@ function detectFundamentalHPS(
       bestBin = b;
     }
   }
+
+  // Fallback: if HPS score is very low (pure tone / weak harmonics),
+  // fall back to simple peak detection (loudest bin)
+  if (bestScore > 0) {
+    // Compare HPS best score against the magnitude at the peak bin
+    let peakMag = 0;
+    let peakBin = minBin;
+    for (let b = minBin; b <= maxBin; b++) {
+      if (magHalf[b] > peakMag) {
+        peakMag = magHalf[b];
+        peakBin = b;
+      }
+    }
+    // If HPS score is less than 1% of the peak magnitude cubed (roughly),
+    // it means HPS found noise — use peak instead
+    const hpsRatio = bestScore / (peakMag * peakMag * peakMag);
+    if (hpsRatio < 0.001 || isNaN(hpsRatio)) {
+      bestBin = peakBin;
+    }
+  }
+
   return bestBin;
 }
 
@@ -185,16 +204,34 @@ function detectFundamentalACF(
   let bestLag = minLag;
   let bestCorr = -Infinity;
 
+  // Compute autocorrelation for all lags
+  const acf = new Float32Array(maxLag + 1);
   for (let lag = minLag; lag <= maxLag; lag++) {
     let sum = 0;
     for (let i = 0; i < segLen - lag; i++) {
       sum += audioData[i] * audioData[i + lag];
     }
+    acf[lag] = sum;
     if (sum > bestCorr) {
       bestCorr = sum;
       bestLag = lag;
     }
   }
+
+  // Parabolic interpolation around best lag for sub-sample precision
+  if (bestLag > minLag && bestLag < maxLag) {
+    const y1 = acf[bestLag - 1];
+    const y2 = acf[bestLag];
+    const y3 = acf[bestLag + 1];
+    const denom = 2 * (2 * y2 - y1 - y3);
+    if (Math.abs(denom) > 1e-10) {
+      const delta = (y3 - y1) / denom;
+      if (Math.abs(delta) < 1) { // sanity check
+        return sampleRate / (bestLag + delta);
+      }
+    }
+  }
+
   return sampleRate / bestLag;
 }
 
@@ -357,7 +394,24 @@ export function analyzeSample(
     quickRecon[n] = s;
   }
 
-  // Compute residual (original - harmonic reconstruction)
+  // Scale quickRecon to match original's RMS level
+  let reconRms = 0;
+  let origRms = 0;
+  for (let n = 0; n < audioData.length; n++) {
+    reconRms += quickRecon[n] * quickRecon[n];
+    origRms += audioData[n] * audioData[n];
+  }
+  reconRms = Math.sqrt(reconRms / audioData.length);
+  origRms = Math.sqrt(origRms / audioData.length);
+
+  if (reconRms > 0) {
+    const scale = origRms / reconRms;
+    for (let n = 0; n < audioData.length; n++) {
+      quickRecon[n] *= scale;
+    }
+  }
+
+  // Compute residual (original - scaled harmonic reconstruction)
   const residual = new Float32Array(audioData.length);
   let resEnergy = 0;
   let origEnergy = 0;
@@ -396,8 +450,12 @@ export function analyzeSample(
     for (let i = 0; i < residualEnvelope.length; i++) residualEnvelope[i] /= resEnvPeak;
   }
 
+  // Cap residual energy ratio at 0.5 to prevent noise layer from overwhelming signal
+  const rawEnergyRatio = origEnergy > 0 ? resEnergy / origEnergy : 0;
+  const energyRatio = Math.min(rawEnergyRatio, 0.5);
+
   const residualAnalysis = {
-    energy: origEnergy > 0 ? resEnergy / origEnergy : 0,
+    energy: energyRatio,
     centerFreq: resCentroid,
     bandwidth: Math.min(resCentroid * 2, sampleRate / 4),
     envelope: residualEnvelope,

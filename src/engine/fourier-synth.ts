@@ -537,7 +537,7 @@ function synthesizeWaveShape(
 // ---------------------------------------------------------------------------
 
 /** In-place peak normalisation to [−1, 1]. */
-function normalise(buffer: Float32Array): void {
+export function normalise(buffer: Float32Array): void {
   let peak = 0;
   for (let i = 0; i < buffer.length; i++) {
     const abs = Math.abs(buffer[i]);

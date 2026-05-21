@@ -540,7 +540,8 @@ export const ALIASES = {
   bell: 'bell', bells: 'bell', chime: 'bell', tubular: 'bell',
   marimba: 'marimba', xylo: 'xylophone', vibes: 'vibraphone', vibe: 'vibraphone',
   drum: 'drums', kick: 'kick drum', snare: 'snare drum',
-  flute: 'flute', sax: 'saxophone', harp: 'harp', sitar: 'sitar', banjo: 'banjo',
+  flute: 'flute', sax: 'saxophone', sitar: 'sitar', banjo: 'banjo',
   mandolin: 'mandolin', accordion: 'accordion', concertina: 'accordion',
-  harmonica: 'harmonica', harp: 'harmonica', mouthharp: 'harmonica',
+  harmonica: 'harmonica', jawharp: 'harmonica', mouthharp: 'harmonica',
+  harp: 'harp',
 };

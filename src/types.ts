@@ -26,10 +26,18 @@ export interface HarmonicData {
    * Length = number of STFT frames.  `undefined` when STFT analysis wasn't used.
    */
   envelope?: Float32Array;
+  /**
+   * Per-frame phase extracted via STFT.
+   * Each entry is the phase (in radians) at the peak bin for this harmonic
+   * in one analysis frame.  Used by Griffin-Lim and improved overlap-add
+   * synthesis to reproduce time-varying phase (vibrato, etc.).
+   * Length = number of STFT frames.  `undefined` when STFT analysis wasn't used.
+   */
+  phaseFrames?: Float32Array;
 }
 
 /** Synthesis mode for the re-synthesizer. */
-export type SynthMode = 'sine' | 'square' | 'sawtooth' | 'triangle' | 'additive';
+export type SynthMode = 'sine' | 'square' | 'sawtooth' | 'triangle' | 'additive' | 'overlapadd' | 'griffinlim';
 
 /** Result returned by the FFT-based analyser. */
 export interface AnalysisResult {

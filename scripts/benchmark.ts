@@ -118,7 +118,7 @@ async function main() {
 
       // Full pipeline: analyze → synthesize → compare
       const analysis = analyzeSample(data, sampleRate, 64);
-      const recon = synthesize(analysis, sampleRate, duration, 'additive', 64);
+      const recon = synthesize(analysis, sampleRate, duration, 'griffinlim', 64);
       const harmFreqs = analysis.harmonics.map(h => h.frequency);
       const sim = computeSimilarity(data, recon, sampleRate, harmFreqs);
 

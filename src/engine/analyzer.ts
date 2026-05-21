@@ -78,16 +78,18 @@ function extractSTFT(
   harmonicFreqs: number[],
   frameSize: number,
   hopSize: number,
-): { envelopes: Float32Array[]; rms: Float32Array } {
+): { envelopes: Float32Array[]; rms: Float32Array; phases: Float32Array[] } {
   const numHarmonics = harmonicFreqs.length;
   const numFrames = Math.max(1, Math.floor((audioData.length - frameSize) / hopSize) + 1);
   const envelopes: Float32Array[] = [];
+  const phases: Float32Array[] = [];
   const rms = new Float32Array(numFrames);
   const halfN = frameSize >> 1;
   const binResolution = sampleRate / frameSize;
 
   for (let h = 0; h < numHarmonics; h++) {
     envelopes.push(new Float32Array(numFrames));
+    phases.push(new Float32Array(numFrames));
   }
 
   const frame = new Float32Array(frameSize);
@@ -109,6 +111,7 @@ function extractSTFT(
 
     const { real: fftRe, imag: fftIm } = fft(frame);
     const mag = magnitude(fftRe, fftIm);
+    const ph = phase(fftRe, fftIm);
 
     for (let h = 0; h < numHarmonics; h++) {
       const targetBin = Math.round(harmonicFreqs[h] / binResolution);
@@ -118,14 +121,19 @@ function extractSTFT(
       const lo = Math.max(1, targetBin - windowSize);
       const hi = Math.min(halfN, targetBin + windowSize);
       let bestAmp = 0;
+      let bestPhase = 0;
       for (let b = lo; b <= hi; b++) {
-        if (mag[b] > bestAmp) bestAmp = mag[b];
+        if (mag[b] > bestAmp) {
+          bestAmp = mag[b];
+          bestPhase = ph[b];
+        }
       }
       envelopes[h][f] = bestAmp;
+      phases[h][f] = bestPhase;
     }
   }
 
-  return { envelopes, rms };
+  return { envelopes, rms, phases };
 }
 
 // ---------------------------------------------------------------------------
@@ -339,7 +347,7 @@ export function analyzeSample(
   const hopSize = Math.max(1, frameSize >> 2); // 75% overlap
 
   const harmonicFreqs = rawHarmonics.map(rh => rh.freq);
-  const { envelopes, rms: rawRms } = extractSTFT(audioData, sampleRate, harmonicFreqs, frameSize, hopSize);
+  const { envelopes, rms: rawRms, phases: rawPhases } = extractSTFT(audioData, sampleRate, harmonicFreqs, frameSize, hopSize);
 
   // Normalise envelopes relative to the GLOBAL peak across all harmonics.
   // This preserves the relative amplitude balance between harmonics —
@@ -373,7 +381,7 @@ export function analyzeSample(
     }
   }
 
-  // Second pass: normalise amplitudes to [0, 1] and attach envelopes
+  // Second pass: normalise amplitudes to [0, 1] and attach envelopes + phase frames
   const normaliser = maxAmplitude > 0 ? maxAmplitude : 1;
   for (let i = 0; i < rawHarmonics.length; i++) {
     const rh = rawHarmonics[i];
@@ -382,6 +390,7 @@ export function analyzeSample(
       amplitude: rh.amp / normaliser,
       phase: rh.phase,
       envelope: normalisedEnvelopes[i],
+      phaseFrames: rawPhases[i],
     });
   }
 
